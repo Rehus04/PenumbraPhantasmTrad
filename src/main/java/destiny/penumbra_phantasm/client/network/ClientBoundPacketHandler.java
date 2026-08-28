@@ -159,9 +159,9 @@ public class ClientBoundPacketHandler
 			case ClientBoundTextBoxPacket.SOUL_HEARTH_SEALING_FOUNTAIN_DEPTHS -> textBox
 					.line(Component.translatable("textbox.penumbra_phantasm.soul_hearth.sealing_fountain.depths"));
 			case ClientBoundTextBoxPacket.SOUL_HEARTH_SEALING_FOUNTAIN_NOT_ENOUGH_DETERMINATION -> textBox
-					.line(Component.translatable("message.penumbra_phantasm.soul_hearth.sealing_fountain.not_enough_determination"));
+					.line(Component.translatable("textbox.penumbra_phantasm.soul_hearth.sealing_fountain.not_enough_determination"));
 			case ClientBoundTextBoxPacket.SOUL_HEARTH_SEALING_FOUNTAIN_ALREADY_BEING_SEALED -> textBox
-					.line(Component.translatable("message.penumbra_phantasm.soul_hearth.sealing_fountain.already_being_sealed"));
+					.line(Component.translatable("textbox.penumbra_phantasm.soul_hearth.sealing_fountain.already_being_sealed"));
 			case ClientBoundTextBoxPacket.SOUL_HEARTH_SEALING_FOUNTAIN_CHOICE -> textBox
 					.line(Component.translatable("textbox.penumbra_phantasm.soul_hearth.sealing_fountain"))
 					.line(Component.translatable("textbox.penumbra_phantasm.soul_hearth.sealing_fountain.choice"))

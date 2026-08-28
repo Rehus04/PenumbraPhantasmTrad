@@ -123,7 +123,7 @@ public class HearthBlock extends BaseEntityBlock {
         if (!(pLevel.getBlockEntity(pPos) instanceof HearthBlockEntity hearthBlockEntity)) return InteractionResult.FAIL;
 
         if (!pLevel.getBiome(pPos).is(Biomes.SOUL_SAND_VALLEY)) {
-            pPlayer.displayClientMessage(Component.translatable("message.penumbra_phantasm.hearth_incorrect_biome"), true);
+            pPlayer.displayClientMessage(Component.translatable("message.penumbra_phantasm.hearth_wrong_biome"), true);
             return InteractionResult.FAIL;
         }
 
