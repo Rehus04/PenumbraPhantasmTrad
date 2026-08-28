@@ -375,7 +375,7 @@
   "advancement.penumbra_phantasm.card_kingdom_visit.title": "Carré d'as",
   "advancement.penumbra_phantasm.card_kingdom_visit.description": "Visitez le royaume des cartes",
   "advancement.penumbra_phantasm.egg_room_card_kingdom.title": "Il est derrière l'arbre",
-  "advancement.penumbra_phantasm.egg_room_card_kingdom.description": "Trouvez une salle au œuf",
+  "advancement.penumbra_phantasm.egg_room_card_kingdom.description": "Trouvez une Salle d'Oeuf",
   "advancement.penumbra_phantasm.scarlet_tree.title": "Derrière l'arbre",
   "advancement.penumbra_phantasm.scarlet_tree.description": "Trouvez un arbre écarlate",
   "advancement.penumbra_phantasm.dark_candy.title": "D'une douceur qui fond en bouche",
@@ -459,7 +459,7 @@
   "biome.penumbra_phantasm.challenger_dark": "Ombres des Mariannes",
   "biome.penumbra_phantasm.challenger_dark.description": "'Un domaine des plus sombres acrimonies, se déguisant de fantaisie'",
 
-  "biome.penumbra_phantasm.egg_room_card_kingdom": "Salle au œuf",
+  "biome.penumbra_phantasm.egg_room_card_kingdom": "Salle d'Oeuf"",
 
   "message.penumbra_phantasm.making_fountain_no_soul_hearth": "Pas de foyez d'ÂME...",
   "message.penumbra_phantasm.making_fountain_not_enough_determination": "Pas assez de DÉTERMINATION pour transpercer...",
@@ -547,13 +547,13 @@
   "screen.penumbra_phantasm.intro.line.26": "          A V E C   L E   P O U V O I R",
   "screen.penumbra_phantasm.intro.line.27": "          D E   < D E L T A R U N E . >",
   "screen.penumbra_phantasm.intro.line.28": "M E T T E Z   P I E D",
-  "screen.penumbra_phantasm.intro.line.29": "     D A N S   C E   M O N D E !"
+  "screen.penumbra_phantasm.intro.line.29": "     D A N S   C E   M O N D E !",
 
   "key.categories.penumbra_phantasm": "PENUMBRA PHANTASM",
   "key.penumbra_phantasm.confirm": "Confirmer",
   "key.penumbra_phantasm.confirm_alt": "Confirmer (Alt)",
-  "key.penumbra_phantasm.cancel": "annuler",
-  "key.penumbra_phantasm.cancel_alt": "annuler (Alt)",
+  "key.penumbra_phantasm.cancel": "Annuler",
+  "key.penumbra_phantasm.cancel_alt": "Annuler (Alt)",
   
   "textbox.penumbra_phantasm.egg.he_is_behind": "(Il est derrière l'arbre.)",
   "textbox.penumbra_phantasm.egg.it_is_a_tree": "(C'est un arbre.)",
