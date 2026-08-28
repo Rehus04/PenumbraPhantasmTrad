@@ -16,6 +16,9 @@ public class ClientBoundTextBoxPacket {
 	public static final String SOUL_HEARTH_SEALING_FOUNTAIN_CHOICE_DENY = "soul_hearth_sealing_fountain_choice_deny";
 	public static final String SOUL_HEARTH_SEALING_FOUNTAIN_CHOICE_CONFIRM = "soul_hearth_sealing_fountain_choice_confirm";
 
+	//Dark fountain stuff
+	public static final String DARK_FOUNTAIN_PUSH_AWAY = "dark_fountain_push_away";
+
 	//Egg rooms
 	public static final String CARD_KINGDOM_EGG_ROOM_TREE_FRONT = "card_kingdom_egg_room_tree_front";
 	public static final String CARD_KINGDOM_EGG_ROOM_TREE_FRONT_GONE = "card_kingdom_egg_room_tree_front_gone";

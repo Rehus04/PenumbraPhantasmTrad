@@ -189,6 +189,8 @@ public class PacketHandlerRegistry {
                 .add();
 
         INSTANCE.messageBuilder(ServerBoundEggRoomInteractPacket.class, index++, NetworkDirection.PLAY_TO_SERVER)
+                .encoder(ServerBoundEggRoomInteractPacket::encode)
+                .decoder(ServerBoundEggRoomInteractPacket::decode)
                 .consumerMainThread(ServerBoundEggRoomInteractPacket::handle)
                 .add();
     }

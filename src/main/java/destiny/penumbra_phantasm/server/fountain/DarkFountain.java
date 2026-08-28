@@ -1004,10 +1004,11 @@ public class DarkFountain {
 
             if (entity instanceof ServerPlayer serverPlayer) {
                 serverPlayer.connection.send(new ClientboundSetEntityMotionPacket(serverPlayer));
-            }
 
-            if (showPushMessage && entity instanceof Player player) {
-                player.displayClientMessage(Component.translatable("message.penumbra_phantasm.pushed_away_by_fountain"), true);
+                if (showPushMessage) {
+                    PacketHandlerRegistry.INSTANCE.send(PacketDistributor.PLAYER.with(() -> serverPlayer),
+                            new ClientBoundTextBoxPacket(ClientBoundTextBoxPacket.SOUL_HEARTH_SEALING_FOUNTAIN_CHOICE));
+                }
             }
         }
     }

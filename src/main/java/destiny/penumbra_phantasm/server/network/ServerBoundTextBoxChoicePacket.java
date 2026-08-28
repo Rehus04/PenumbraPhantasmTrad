@@ -39,7 +39,7 @@ public class ServerBoundTextBoxChoicePacket {
 			ServerPlayer player = ctx.get().getSender();
 			if (player != null) {
 				handleEggChoice(player, scriptId, choice);
-				handleFountainSealChoice(player, choice);
+				handleFountainSealChoice(player, scriptId, choice);
 			}
 		});
 		return true;
@@ -74,7 +74,11 @@ public class ServerBoundTextBoxChoicePacket {
 		}
 	}
 
-	private static void handleFountainSealChoice(ServerPlayer player, boolean choice) {
+	private static void handleFountainSealChoice(ServerPlayer player, String scriptId, boolean choice) {
+		if (!ClientBoundTextBoxPacket.SOUL_HEARTH_SEALING_FOUNTAIN_CHOICE.equals(scriptId)) {
+			return;
+		}
+
 		if (choice) {
 			PacketHandlerRegistry.INSTANCE.send(PacketDistributor.PLAYER.with(() -> player),
 					new ClientBoundTextBoxPacket(ClientBoundTextBoxPacket.SOUL_HEARTH_SEALING_FOUNTAIN_CHOICE_CONFIRM));

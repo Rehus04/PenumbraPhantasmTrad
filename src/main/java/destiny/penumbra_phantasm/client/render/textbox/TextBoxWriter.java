@@ -165,6 +165,7 @@ public class TextBoxWriter {
 		revealed = 0;
 		typeAccum = 0f;
 		waitRemaining = 0f;
+		tick();
 
 		fireLineStarts(pages.get(pageIndex), 0);
 	}

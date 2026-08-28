@@ -167,6 +167,8 @@ public class ClientBoundPacketHandler
 					.speed(0.5f)
 					.line(Component.translatable("textbox.penumbra_phantasm.soul_hearth.sealing_fountain.choice.confirm"))
 					.onTextBoxClose(ClientBoundPacketHandler::spawnSealingSoulEntity);
+			case ClientBoundTextBoxPacket.DARK_FOUNTAIN_PUSH_AWAY -> textBox
+					.line(Component.translatable("textbox.penumbra_phantasm.dark_fountain.push_away"));
 
 			default -> textBox.line(Component.literal(id));
 		}
