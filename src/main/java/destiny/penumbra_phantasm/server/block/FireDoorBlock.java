@@ -1,6 +1,7 @@
 package destiny.penumbra_phantasm.server.block;
 
 import destiny.penumbra_phantasm.client.network.ClientBoundFireDoorPacket;
+import destiny.penumbra_phantasm.client.network.ClientBoundTextBoxPacket;
 import destiny.penumbra_phantasm.server.block.entity.FireDoorBlockEntity;
 import destiny.penumbra_phantasm.server.capability.FireDoorsCapability;
 import destiny.penumbra_phantasm.server.fountain.FireDoor;
@@ -83,7 +84,10 @@ public class FireDoorBlock extends BaseEntityBlock {
     public InteractionResult use(BlockState pState, Level pLevel, BlockPos pPos, Player pPlayer,
                                  InteractionHand pHand, BlockHitResult pHit) {
         if (DarkWorldUtil.isDepths(pLevel)) {
-            pPlayer.displayClientMessage(Component.translatable("message.penumbra_phantasm.fire_door_depths"), true);
+            if (pPlayer instanceof ServerPlayer serverPlayer) {
+                PacketHandlerRegistry.INSTANCE.send(PacketDistributor.PLAYER.with(() -> serverPlayer),
+                        new ClientBoundTextBoxPacket(ClientBoundTextBoxPacket.FIRE_DOOR_DEPTHS));
+            }
             return InteractionResult.SUCCESS;
         }
 
@@ -160,7 +164,9 @@ public class FireDoorBlock extends BaseEntityBlock {
 
             if (pPlayer.isCrouching()) {
                 if (hasDoor) {
-                    pPlayer.displayClientMessage(Component.translatable("message.penumbra_phantasm.fire_door_unlink"), true);
+                    PacketHandlerRegistry.INSTANCE.send(PacketDistributor.PLAYER.with(() -> serverPlayer),
+                            new ClientBoundTextBoxPacket(ClientBoundTextBoxPacket.FIRE_DOOR_UNLINK));
+
                     cap.removeFireDoor(currentDim, lowerPos);
                 }
                 return InteractionResult.SUCCESS;
@@ -169,9 +175,11 @@ public class FireDoorBlock extends BaseEntityBlock {
             if (!hasDoor) {
                 int sameWorldCount = sameDimDoors.size();
                 if (sameWorldCount >= 10) {
-                    pPlayer.displayClientMessage(Component.translatable("message.penumbra_phantasm.fire_door_limit_reached"), true);
+                    PacketHandlerRegistry.INSTANCE.send(PacketDistributor.PLAYER.with(() -> serverPlayer),
+                            new ClientBoundTextBoxPacket(ClientBoundTextBoxPacket.FIRE_DOOR_LIMIT_REACHED));
                 } else {
-                    pPlayer.displayClientMessage(Component.translatable("message.penumbra_phantasm.fire_door_link"), true);
+                    PacketHandlerRegistry.INSTANCE.send(PacketDistributor.PLAYER.with(() -> serverPlayer),
+                            new ClientBoundTextBoxPacket(ClientBoundTextBoxPacket.FIRE_DOOR_LINK));
                     Component name = fireDoorEntity.getCustomName() != null ? fireDoorEntity.getCustomName() : Component.translatable("block.penumbra_phantasm.fire_door");
                     cap.addFireDoor(currentDim, lowerPos, pState.getValue(HORIZONTAL_FACING).toYRot(), name);
                 }
@@ -182,7 +190,8 @@ public class FireDoorBlock extends BaseEntityBlock {
             List<FireDoor> finalList = sameDimDoors.stream().filter(d -> !d.equals(currentDoor)).toList();
 
             if (finalList.isEmpty()) {
-                pPlayer.displayClientMessage(Component.translatable("message.penumbra_phantasm.fire_door_not_enough_doors"), true);
+                PacketHandlerRegistry.INSTANCE.send(PacketDistributor.PLAYER.with(() -> serverPlayer),
+                        new ClientBoundTextBoxPacket(ClientBoundTextBoxPacket.FIRE_DOOR_NOT_ENOUGH_DOORS));
                 return InteractionResult.FAIL;
             }
 

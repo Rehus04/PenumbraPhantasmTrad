@@ -473,8 +473,6 @@
   "message.penumbra_phantasm.making_fountain_not_enough_determination": "Not enough DETERMINATION to pierce...",
   "message.penumbra_phantasm.making_fountain_invalid_position": "Must be standing on a full block",
   "message.penumbra_phantasm.making_fountain_not_enough_key_blocks": "Not enough blocks to power your imagination...",
-  "message.penumbra_phantasm.making_fountain_inside_dark_world": "You feel like that's not a good idea...",
-  "message.penumbra_phantasm.making_fountain_inside_depths": "...But pierce to where?",
   "message.penumbra_phantasm.making_fountain_unsealed_or_too_big": "The room is unsealed or too big",
   "message.penumbra_phantasm.making_fountain_room_has_active_fountain": "A fountain is already in this room",
   "message.penumbra_phantasm.making_fountain_depths_conflict": "A fountain on this position already stirs somewhere else...",
@@ -483,17 +481,8 @@
   "message.penumbra_phantasm.hearth_wrong_biome": "The surroundings aren't fitting... (Must be in Soul Sand Valley)",
   "message.penumbra_phantasm.hearth_no_campfire": "The Hearth doesn't have enough heat. (Must be placed on a soul campfire)",
   "message.penumbra_phantasm.dark_world_without_fountain": "The dark world you were in didn't have an active fountain",
-  "message.penumbra_phantasm.great_door_cant_open_no_light_door": "But the door wouldn't budge... (No unclaimed doors in the fountain rooms)",
-  "message.penumbra_phantasm.great_door_cant_open_no_fountain": "But the door wouldn't budge... (This dark world doesn't have a fountain)",
-  "message.penumbra_phantasm.great_door_cant_open_no_fountain_destination": "But the door wouldn't budge... (Destination dark world doesn't have a fountain)",
-  "message.penumbra_phantasm.great_door_cant_open_not_fountain_door": "But the door wouldn't budge... (Light world door is not in the fountain's shell)",
   "message.penumbra_phantasm.cheshire_chest_not_in_dark_world": "But the lid wouldn't budge... (Not in a dark world)",
-  "message.penumbra_phantasm.fire_door_link": "Saved this Fire Door to your locations",
-  "message.penumbra_phantasm.fire_door_unlink": "Removed this fire door from your locations",
-  "message.penumbra_phantasm.fire_door_limit_reached": "Can't save any more fire doors in this dark world...",
-  "message.penumbra_phantasm.fire_door_not_enough_doors": "Nowhere to warp to...",
   "message.penumbra_phantasm.fire_door_not_in_dark_world": "But the handle wouldn't budge... (Not in a dark world)",
-  "message.penumbra_phantasm.fire_door_depths": "But the handle wouldn't budge... (Cannot use in the depths)",
 
   "death.attack.penumbra_phantasm.injection_prick": "%1$s couldn't survive an injection",
   "death.attack.penumbra_phantasm.injection_prick.player": "%1$s was injected to death by %2$s",
@@ -558,6 +547,9 @@
   "key.penumbra_phantasm.cancel": "Cancel",
   "key.penumbra_phantasm.cancel_alt": "Cancel (Alt)",
 
+  "textbox.penumbra_phantasm.making_fountain.inside_dark_world": "You feel like that's not a good idea...",
+  "textbox.penumbra_phantasm.making_fountain.inside_depths": "...But pierce to where?",
+
   "textbox.penumbra_phantasm.soul_hearth.reject": "The SOUL within rejects you.",
   "textbox.penumbra_phantasm.soul_hearth.sealing_fountain.depths": "But your SOUL could not shine through the dark...",
   "textbox.penumbra_phantasm.soul_hearth.sealing_fountain.not_enough_determination": "But you weren't DETERMINED enough...",
@@ -568,6 +560,17 @@
   "textbox.penumbra_phantasm.soul_hearth.sealing_fountain.choice.confirm": "(It was as if your very SOUL was glowing.)",
 
   "textbox.penumbra_phantasm.dark_fountain.push_away": "The flow of darkness pushes you away...",
+
+  "textbox.penumbra_phantasm.great_door.no_light_door": "But the door wouldn't budge... (No unclaimed doors in the fountain rooms)",
+  "textbox.penumbra_phantasm.great_door.no_fountain": "But the door wouldn't budge... (This dark world doesn't have a fountain)",
+  "textbox.penumbra_phantasm.great_door.no_fountain_destination": "But the door wouldn't budge... (Destination dark world doesn't have a fountain)",
+  "textbox.penumbra_phantasm.great_door.not_fountain_door": "But the door wouldn't budge... (Light world door is not in the fountain's shell)",
+
+  "textbox.penumbra_phantasm.fire_door.link": "Saved this Fire Door to your locations",
+  "textbox.penumbra_phantasm.fire_door.unlink": "Removed this fire door from your locations",
+  "textbox.penumbra_phantasm.fire_door.limit_reached": "Can't save any more fire doors in this dark world...",
+  "textbox.penumbra_phantasm.fire_door.not_enough_doors": "Nowhere to warp to...",
+  "textbox.penumbra_phantasm.fire_door.depths": "But the handle wouldn't budge... (Cannot use in the depths)",
 
   "textbox.penumbra_phantasm.card_kingdom_egg_room.tree_front": "(He is behind the tree.)",
   "textbox.penumbra_phantasm.card_kingdom_egg_room.tree_front.gone": "(It is a tree.)",

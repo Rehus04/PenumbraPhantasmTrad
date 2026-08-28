@@ -125,7 +125,7 @@ public class ClientBoundPacketHandler
 		TextBoxScript textBox = new TextBoxScript().id(id);
 
 		switch (id) {
-			//Egg rooms text
+			//Egg rooms
 			case ClientBoundTextBoxPacket.CARD_KINGDOM_EGG_ROOM_TREE_FRONT ->
 					textBox.line(Component.translatable("textbox.penumbra_phantasm.card_kingdom_egg_room.tree_front"));
 			case ClientBoundTextBoxPacket.CARD_KINGDOM_EGG_ROOM_TREE_FRONT_GONE ->
@@ -147,7 +147,13 @@ public class ClientBoundPacketHandler
 			case ClientBoundTextBoxPacket.USE_EGG ->
 					textBox.line(Component.translatable("textbox.penumbra_phantasm.use.egg"), ClientBoundPacketHandler::playEggAcquire, null);
 
-			//Soul hearth use text
+			//Knife uses
+			case ClientBoundTextBoxPacket.MAKING_FOUNTAIN_INSIDE_DARK_WORLD ->
+					textBox.line(Component.translatable("textbox.penumbra_phantasm.making_fountain.inside_dark_world"));
+			case ClientBoundTextBoxPacket.MAKING_FOUNTAIN_INSIDE_DEPTHS ->
+					textBox.line(Component.translatable("textbox.penumbra_phantasm.making_fountain.inside_depths"));
+
+			//Soul hearth
 			case ClientBoundTextBoxPacket.SOUL_HEARTH_REJECT -> textBox
 					.line(Component.translatable("textbox.penumbra_phantasm.soul_hearth.reject"));
 			case ClientBoundTextBoxPacket.SOUL_HEARTH_SEALING_FOUNTAIN_DEPTHS -> textBox
@@ -167,8 +173,32 @@ public class ClientBoundPacketHandler
 					.speed(0.5f)
 					.line(Component.translatable("textbox.penumbra_phantasm.soul_hearth.sealing_fountain.choice.confirm"))
 					.onTextBoxClose(ClientBoundPacketHandler::spawnSealingSoulEntity);
+
+			//Dark fountains
 			case ClientBoundTextBoxPacket.DARK_FOUNTAIN_PUSH_AWAY -> textBox
 					.line(Component.translatable("textbox.penumbra_phantasm.dark_fountain.push_away"));
+
+			//Great doors
+			case ClientBoundTextBoxPacket.GREAT_DOOR_NO_LIGHT_DOOR -> textBox
+					.line(Component.translatable("textbox.penumbra_phantasm.great_door.no_light_door"));
+			case ClientBoundTextBoxPacket.GREAT_DOOR_NO_FOUNTAIN -> textBox
+					.line(Component.translatable("textbox.penumbra_phantasm.great_door.no_fountain"));
+			case ClientBoundTextBoxPacket.GREAT_DOOR_NO_FOUNTAIN_DESTINATION -> textBox
+					.line(Component.translatable("textbox.penumbra_phantasm.great_door.no_fountain_destination"));
+			case ClientBoundTextBoxPacket.GREAT_DOOR_NOT_FOUNTAIN_DOOR -> textBox
+					.line(Component.translatable("textbox.penumbra_phantasm.great_door.not_fountain_door"));
+
+			//Fire doors
+			case ClientBoundTextBoxPacket.FIRE_DOOR_LINK -> textBox
+					.line(Component.translatable("textbox.penumbra_phantasm.fire_door.link"));
+			case ClientBoundTextBoxPacket.FIRE_DOOR_UNLINK -> textBox
+					.line(Component.translatable("textbox.penumbra_phantasm.fire_door.unlink"));
+			case ClientBoundTextBoxPacket.FIRE_DOOR_LIMIT_REACHED -> textBox
+					.line(Component.translatable("textbox.penumbra_phantasm.fire_door.limit_reached"));
+			case ClientBoundTextBoxPacket.FIRE_DOOR_NOT_ENOUGH_DOORS -> textBox
+					.line(Component.translatable("textbox.penumbra_phantasm.fire_door.not_enough_doors"));
+			case ClientBoundTextBoxPacket.FIRE_DOOR_DEPTHS -> textBox
+					.line(Component.translatable("textbox.penumbra_phantasm.fire_door.depths"));
 
 			default -> textBox.line(Component.literal(id));
 		}

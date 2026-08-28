@@ -1,9 +1,11 @@
 package destiny.penumbra_phantasm.server.block.entity;
 
+import destiny.penumbra_phantasm.client.network.ClientBoundTextBoxPacket;
 import destiny.penumbra_phantasm.server.capability.GreatDoorCapability;
 import destiny.penumbra_phantasm.server.fountain.GreatDoor;
 import destiny.penumbra_phantasm.server.registry.BlockEntityRegistry;
 import destiny.penumbra_phantasm.server.registry.CapabilityRegistry;
+import destiny.penumbra_phantasm.server.registry.PacketHandlerRegistry;
 import destiny.penumbra_phantasm.server.registry.SoundRegistry;
 import destiny.penumbra_phantasm.server.util.DarkWorldUtil;
 import net.minecraft.core.BlockPos;
@@ -13,6 +15,7 @@ import net.minecraft.nbt.NbtUtils;
 import net.minecraft.network.Connection;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
@@ -22,6 +25,7 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.common.util.LazyOptional;
+import net.minecraftforge.network.PacketDistributor;
 import org.jetbrains.annotations.NotNull;
 
 public class GreatDoorShapeBlockEntity extends BlockEntity {
@@ -74,23 +78,35 @@ public class GreatDoorShapeBlockEntity extends BlockEntity {
             DarkWorldUtil.tryBindUnlinkedGreatDoor(serverLevel, greatDoor);
         }
         if (!DarkWorldUtil.levelHasDarkFountain(serverLevel)) {
-            player.displayClientMessage(Component.translatable("message.penumbra_phantasm.great_door_cant_open_no_fountain"), true);
+            if (player instanceof ServerPlayer serverPlayer) {
+                PacketHandlerRegistry.INSTANCE.send(PacketDistributor.PLAYER.with(() -> serverPlayer),
+                        new ClientBoundTextBoxPacket(ClientBoundTextBoxPacket.GREAT_DOOR_NO_FOUNTAIN));
+            }
             return InteractionResult.FAIL;
         }
         if (greatDoor.isDestinationDarkWorld && greatDoor.destinationGreatDoorDimension != null) {
             ServerLevel destLevel = serverLevel.getServer().getLevel(greatDoor.destinationGreatDoorDimension);
             if (destLevel == null || !DarkWorldUtil.levelHasDarkFountain(destLevel)) {
-                player.displayClientMessage(Component.translatable("message.penumbra_phantasm.great_door_cant_open_no_fountain_destination"), true);
+                if (player instanceof ServerPlayer serverPlayer) {
+                    PacketHandlerRegistry.INSTANCE.send(PacketDistributor.PLAYER.with(() -> serverPlayer),
+                            new ClientBoundTextBoxPacket(ClientBoundTextBoxPacket.GREAT_DOOR_NO_FOUNTAIN_DESTINATION));
+                }
                 return InteractionResult.FAIL;
             }
         }
         if (greatDoor.lightDoorPos == null || greatDoor.lightDoorDimension == null) {
-            player.displayClientMessage(Component.translatable("message.penumbra_phantasm.great_door_cant_open_no_light_door"), true);
+            if (player instanceof ServerPlayer serverPlayer) {
+                PacketHandlerRegistry.INSTANCE.send(PacketDistributor.PLAYER.with(() -> serverPlayer),
+                        new ClientBoundTextBoxPacket(ClientBoundTextBoxPacket.GREAT_DOOR_NO_LIGHT_DOOR));
+            }
             return InteractionResult.FAIL;
         }
 
         if (!DarkWorldUtil.isLightDoorValidForFountain(serverLevel, greatDoor.lightDoorPos, greatDoor.lightDoorDimension)) {
-            player.displayClientMessage(Component.translatable("message.penumbra_phantasm.great_door_cant_open_not_fountain_door"), true);
+            if (player instanceof ServerPlayer serverPlayer) {
+                PacketHandlerRegistry.INSTANCE.send(PacketDistributor.PLAYER.with(() -> serverPlayer),
+                        new ClientBoundTextBoxPacket(ClientBoundTextBoxPacket.GREAT_DOOR_NOT_FOUNTAIN_DOOR));
+            }
             return InteractionResult.FAIL;
         }
 

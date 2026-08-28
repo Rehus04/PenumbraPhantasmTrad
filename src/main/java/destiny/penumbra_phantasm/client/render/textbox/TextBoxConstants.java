@@ -14,7 +14,7 @@ public final class TextBoxConstants {
 	public static final int JEWEL_SIZE = 16;
 	public static final int GLOW_PERIOD_MS = 5000;
 
-	public static final int CHARLINE = 50;
+	public static final int CHARLINE = 44;
 	public static final int MAX_LINES = 3;
 	public static final int HSPACE = 6;
 	public static final int VSPACE = 18;
