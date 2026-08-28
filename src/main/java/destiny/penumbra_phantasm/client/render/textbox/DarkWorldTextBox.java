@@ -4,10 +4,12 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import destiny.penumbra_phantasm.PenumbraPhantasm;
 import destiny.penumbra_phantasm.server.registry.CapabilityRegistry;
+import destiny.penumbra_phantasm.server.util.DarkWorldUtil;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.Style;
 import net.minecraft.resources.ResourceLocation;
@@ -38,6 +40,12 @@ public final class DarkWorldTextBox {
 
 		float glowDelta = (float) (Util.getMillis() % TextBoxConstants.GLOW_PERIOD_MS) / TextBoxConstants.GLOW_PERIOD_MS;
 		float jewelAlpha = 1f - Mth.sin(glowDelta * Mth.PI);
+
+		LocalPlayer player = Minecraft.getInstance().player;
+
+		if (player != null && DarkWorldUtil.isDepths(player.level())) {
+			jewelAlpha = 0;
+		}
 
 		graphics.setColor(1f, 1f, 1f, jewelAlpha);
 
