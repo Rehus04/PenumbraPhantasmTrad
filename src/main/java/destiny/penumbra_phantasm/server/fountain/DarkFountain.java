@@ -68,7 +68,7 @@ public class DarkFountain {
     public static final int SEAL_FLASH_DELAY = 20;
     public static final int SEAL_FLASH_DURATION = 30;
 
-    public static final int DEPTHS_XZ_SCALE = -10;
+    public static final int DEPTHS_XZ_SCALE = 10;
     public static final int DEPTHS_FOUNTAIN_Y_OFFSET = 64;
 
     public static final double DEPTHS_PIERCE_XZ = 1;
@@ -1172,11 +1172,11 @@ public class DarkFountain {
     }
 
     public static int scaledDepthsX(int originX) {
-        return originX * DEPTHS_XZ_SCALE;
+        return -1 * originX / DEPTHS_XZ_SCALE;
     }
 
     public static int scaledDepthsZ(int originZ) {
-        return originZ * DEPTHS_XZ_SCALE;
+        return -1 * originZ / DEPTHS_XZ_SCALE;
     }
 
     public static boolean isDepthsXzOccupied(MinecraftServer server, Vec2 depthsPos) {
