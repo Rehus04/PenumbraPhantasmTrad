@@ -9,11 +9,11 @@ import destiny.penumbra_phantasm.server.item.HearthSoulItem;
 import destiny.penumbra_phantasm.server.item.SoulHearthItem;
 import destiny.penumbra_phantasm.server.registry.BlockEntityRegistry;
 import destiny.penumbra_phantasm.server.registry.PacketHandlerRegistry;
-import destiny.penumbra_phantasm.server.registry.ParticleTypeRegistry;
 import destiny.penumbra_phantasm.server.registry.SoundRegistry;
 import destiny.penumbra_phantasm.server.util.ModUtil;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -55,7 +55,7 @@ import static destiny.penumbra_phantasm.server.item.SoulHearthItem.SOUL_TYPE;
 import static net.minecraft.world.level.block.CampfireBlock.LIT;
 
 public class HearthBlock extends BaseEntityBlock {
-    public static final IntegerProperty SOUL_TYPE_HEARTH = IntegerProperty.create("soul_type", 0, 7);
+    public static final IntegerProperty HEARTH_SOUL_TYPE = IntegerProperty.create("soul_type", 0, 7);
 
     public static final VoxelShape SHAPE = ModUtil.buildShape(
             Block.box(3.5, 0, 3.5, 12.5, 1, 12.5),
@@ -75,7 +75,7 @@ public class HearthBlock extends BaseEntityBlock {
 
     public HearthBlock(Properties pProperties) {
         super(pProperties);
-        this.registerDefaultState(this.defaultBlockState().setValue(SOUL_TYPE_HEARTH, 0));
+        this.registerDefaultState(this.defaultBlockState().setValue(HEARTH_SOUL_TYPE, 0));
     }
 
     @Override
@@ -91,7 +91,7 @@ public class HearthBlock extends BaseEntityBlock {
             List<ItemStack> list = loottable.getRandomItems(lootparams);
             for (ItemStack stack : list) {
                 if (stack.getItem() instanceof SoulHearthItem) {
-                    stack.getOrCreateTag().putInt(SOUL_TYPE, pState.getValue(SOUL_TYPE_HEARTH));
+                    stack.getOrCreateTag().putInt(SOUL_TYPE, pState.getValue(HEARTH_SOUL_TYPE));
                 }
             }
 
@@ -101,7 +101,7 @@ public class HearthBlock extends BaseEntityBlock {
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> pBuilder) {
-        pBuilder.add(SOUL_TYPE_HEARTH);
+        pBuilder.add(HEARTH_SOUL_TYPE);
     }
 
     @Override
@@ -122,60 +122,68 @@ public class HearthBlock extends BaseEntityBlock {
 
         if (!(pLevel.getBlockEntity(pPos) instanceof HearthBlockEntity hearthBlockEntity)) return InteractionResult.FAIL;
 
-        if (pLevel.getBiome(pPos).is(Biomes.SOUL_SAND_VALLEY) && pLevel.getBlockState(pPos.below()).is(Blocks.SOUL_CAMPFIRE) && pLevel.getBlockState(pPos.below()).getValue(LIT)) {
-            ItemStack stack = pPlayer.getItemInHand(pHand);
+        if (!pLevel.getBiome(pPos).is(Biomes.SOUL_SAND_VALLEY)) {
+            pPlayer.displayClientMessage(Component.translatable("message.penumbra_phantasm.hearth_incorrect_biome"), true);
+            return InteractionResult.FAIL;
+        }
 
-            if (stack.getItem() instanceof HearthSoulItem && pState.getValue(SOUL_TYPE_HEARTH) == 0) {
-                pLevel.setBlockAndUpdate(pPos, pState.setValue(SOUL_TYPE_HEARTH, stack.getTag().getInt(SOUL_TYPE)));
+        if (!pLevel.getBlockState(pPos.below()).is(Blocks.SOUL_CAMPFIRE) || !pLevel.getBlockState(pPos.below()).getValue(LIT)) {
+            pPlayer.displayClientMessage(Component.translatable("message.penumbra_phantasm.hearth_no_campfire"), true);
+            return InteractionResult.FAIL;
+        }
 
-                pLevel.playSound(null, pPos, SoundRegistry.SOUL_GRAB.get(), SoundSource.BLOCKS, 0.5f, 1);
+        ItemStack stack = pPlayer.getItemInHand(pHand);
 
-                stack.shrink(1);
+        if (stack.getItem() instanceof HearthSoulItem && pState.getValue(HEARTH_SOUL_TYPE) == 0) {
+            pLevel.setBlockAndUpdate(pPos, pState.setValue(HEARTH_SOUL_TYPE, stack.getTag().getInt(SOUL_TYPE)));
 
-                int particleAmount = pLevel.random.nextInt(3, 6);
+            pLevel.playSound(null, pPos, SoundRegistry.SOUL_GRAB.get(), SoundSource.BLOCKS, 0.5f, 1);
 
-                for (int i = 0; i < particleAmount; i++) {
-                    double x = pPos.getX() + (pLevel.random.nextDouble() - 0.5);
-                    double y = pPos.getY() + 1;
-                    double z = pPos.getZ() + (pLevel.random.nextDouble() - 0.5);
+            stack.shrink(1);
 
-                    PacketHandlerRegistry.INSTANCE.send(
-                            PacketDistributor.NEAR.with(() -> new PacketDistributor.TargetPoint(x, y, z, 32.0, pLevel.dimension())),
-                            new ClientBoundParticlePacket(
-                                    ForgeRegistries.PARTICLE_TYPES.getKey(ParticleTypes.SOUL),
-                                    x, y, z, 0, 0, 0, 1
-                            )
-                    );
-                }
+            int particleAmount = pLevel.random.nextInt(3, 6);
 
-                pLevel.setBlockAndUpdate(pPos.below(), Blocks.SOUL_CAMPFIRE.defaultBlockState().setValue(LIT, false));
-                pLevel.playSound(null, pPos, SoundEvents.SOUL_ESCAPE, SoundSource.BLOCKS, 1f, 1f);
+            for (int i = 0; i < particleAmount; i++) {
+                double x = pPos.getX() + (pLevel.random.nextDouble() - 0.5);
+                double y = pPos.getY() + 1;
+                double z = pPos.getZ() + (pLevel.random.nextDouble() - 0.5);
 
-                TriggerCriterions.SOUL_HEARTH.trigger((ServerPlayer) pPlayer);
-
-                return InteractionResult.SUCCESS;
+                PacketHandlerRegistry.INSTANCE.send(
+                        PacketDistributor.NEAR.with(() -> new PacketDistributor.TargetPoint(x, y, z, 32.0, pLevel.dimension())),
+                        new ClientBoundParticlePacket(
+                                ForgeRegistries.PARTICLE_TYPES.getKey(ParticleTypes.SOUL),
+                                x, y, z, 0, 0, 0, 1
+                        )
+                );
             }
 
-            if (hearthBlockEntity.playerUuid == null) {
-                boolean hasSoulItem = false;
-                for (ItemStack stack1 : pPlayer.getInventory().items) {
-                    if (!stack1.isEmpty() && stack1.getItem() instanceof HearthSoulItem) {
-                        hasSoulItem = true;
-                    }
+            pLevel.setBlockAndUpdate(pPos.below(), Blocks.SOUL_CAMPFIRE.defaultBlockState().setValue(LIT, false));
+            pLevel.playSound(null, pPos, SoundEvents.SOUL_ESCAPE, SoundSource.BLOCKS, 1f, 1f);
+
+            TriggerCriterions.SOUL_HEARTH.trigger((ServerPlayer) pPlayer);
+
+            return InteractionResult.SUCCESS;
+        }
+
+        if (hearthBlockEntity.playerUuid == null) {
+            boolean hasSoulItem = false;
+            for (ItemStack stack1 : pPlayer.getInventory().items) {
+                if (!stack1.isEmpty() && stack1.getItem() instanceof HearthSoulItem) {
+                    hasSoulItem = true;
                 }
-
-                if (!hasSoulItem) {
-                    hearthBlockEntity.soulRipTicker = 0;
-                    hearthBlockEntity.playerUuid = pPlayer.getUUID();
-
-                    PacketHandlerRegistry.INSTANCE.send(
-                            PacketDistributor.TRACKING_ENTITY_AND_SELF.with(() -> pPlayer),
-                            new ClientBoundPlayPlayerAnimationPacket(pPlayer.getId(), new ResourceLocation(PenumbraPhantasm.MODID, "soul_rip"))
-                    );
-                }
-
-                return InteractionResult.SUCCESS;
             }
+
+            if (!hasSoulItem) {
+                hearthBlockEntity.soulRipTicker = 0;
+                hearthBlockEntity.playerUuid = pPlayer.getUUID();
+
+                PacketHandlerRegistry.INSTANCE.send(
+                        PacketDistributor.TRACKING_ENTITY_AND_SELF.with(() -> pPlayer),
+                        new ClientBoundPlayPlayerAnimationPacket(pPlayer.getId(), new ResourceLocation(PenumbraPhantasm.MODID, "soul_rip"))
+                );
+            }
+
+            return InteractionResult.SUCCESS;
         }
 
         return InteractionResult.SUCCESS;

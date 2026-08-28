@@ -231,7 +231,6 @@ public class DarkWorldCycleButton<T> extends AbstractButton {
         this.renderScrollingString(guiGraphics, font, 2, color);
     }
 
-    // ---------- Static builders ----------
     public static <T> Builder<T> builder(Function<T, Component> valueStringifier) {
         return new Builder<>(valueStringifier);
     }

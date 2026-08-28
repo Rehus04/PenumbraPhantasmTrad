@@ -1,12 +1,10 @@
 package destiny.penumbra_phantasm.client.sound;
 
-import destiny.penumbra_phantasm.PenumbraPhantasm;
-import destiny.penumbra_phantasm.client.ClientConfig;
 import destiny.penumbra_phantasm.server.capability.DarkFountainCapability;
 import destiny.penumbra_phantasm.server.datapack.BiomeMusicType;
 import destiny.penumbra_phantasm.server.fountain.DarkFountain;
+import destiny.penumbra_phantasm.server.egg_room.EggRoomUtil;
 import destiny.penumbra_phantasm.server.registry.CapabilityRegistry;
-import destiny.penumbra_phantasm.server.registry.SoundRegistry;
 import destiny.penumbra_phantasm.server.util.DarkWorldUtil;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
@@ -15,28 +13,25 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
 import net.minecraft.core.RegistryAccess;
-import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.biome.Biome;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.common.util.LazyOptional;
-import net.minecraftforge.registries.ForgeRegistries;
 
 import javax.annotation.Nullable;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 public class MusicManager {
     public static final MusicManager INSTANCE = new MusicManager();
-    public static final float MUSIC_VOLUME = 0.2F;
-    public static final double FOUNTAIN_MUSIC_RANGE = 24.0;
+    public static final float MUSIC_VOLUME = 0.2f;
+    public static final double FOUNTAIN_MUSIC_RANGE = 24;
+    public static final double FOUNTAIN_MUSIC_DEPTHS_RANGE = 96;
 
     public final Minecraft minecraft = Minecraft.getInstance();
     public final Map<ResourceLocation, BiomeMusic> biomeMusicMap = new HashMap<>();
@@ -60,16 +55,22 @@ public class MusicManager {
     public boolean pendingLooping = true;
 
     private float lastMusicSlider = Float.NaN;
+    @Nullable
+    private ResourceKey<Level> lastDimension;
 
     public static MusicManager getInstance() {
         return INSTANCE;
     }
 
     private void ensureInitialized() {
+        if (initialized && biomeMusicMap.isEmpty() && minecraft.level != null) {
+            initialized = false;
+        }
         if (!initialized)
         {
             if(minecraft.level != null)
             {
+                biomeMusicMap.clear();
                 RegistryAccess access = minecraft.level.registryAccess();
                 Registry<BiomeMusicType> registry = access.registryOrThrow(BiomeMusicType.REGISTRY_KEY);
                 for(Map.Entry<ResourceKey<BiomeMusicType>, BiomeMusicType> entry : registry.entrySet())
@@ -79,8 +80,8 @@ public class MusicManager {
                     BiomeMusic music = new BiomeMusic(() -> event, type.looping(), type.minDelay(), type.maxDelay());
                     biomeMusicMap.put(type.biome(), music);
                 }
+                initialized = true;
             }
-            initialized = true;
         }
     }
 
@@ -89,9 +90,18 @@ public class MusicManager {
 
         LocalPlayer player = minecraft.player;
         ClientLevel level = minecraft.level;
-        if (player == null || level == null) {
+        if (level == null) {
+            lastDimension = null;
             stopImmediately();
             return;
+        }
+        if (player == null) {
+            return;
+        }
+
+        if (lastDimension == null || !lastDimension.equals(level.dimension())) {
+            lastDimension = level.dimension();
+            stopImmediately();
         }
 
         if (!DarkWorldUtil.isDarkWorld(level)) {
@@ -123,8 +133,9 @@ public class MusicManager {
             fadeInTicks = 0;
         }
 
-        if (currentSound != null && (state == State.PLAYING || state == State.FADING_IN)
-                && !minecraft.getSoundManager().isActive(currentSound)) {
+        if (currentSound != null && state != State.SILENT && state != State.WAITING
+                && !minecraft.getSoundManager().isActive(currentSound)
+                && !(state == State.FADING_IN && fadeInTicks <= 10)) {
             if (!currentSound.isStopped()) {
                 currentSound.stopSound();
                 minecraft.getSoundManager().stop(currentSound);
@@ -135,6 +146,7 @@ public class MusicManager {
             } else {
                 currentSound = null;
                 currentSoundEvent = null;
+                pendingSoundEvent = null;
                 state = State.SILENT;
                 fadeInTicks = 0;
             }
@@ -160,6 +172,10 @@ public class MusicManager {
         }
 
         if (desiredSound == null) {
+            if (EggRoomUtil.isEggRoom(level) && (state == State.PLAYING || state == State.FADING_IN)) {
+                tickFade();
+                return;
+            }
             if (state != State.SILENT && state != State.FADING_OUT) {
                 beginFadeOut();
             }
@@ -352,13 +368,21 @@ public class MusicManager {
             if (!DarkWorldUtil.isDarkWorld(minecraft.level)) {
                 distance = fountainPos.getCenter().distanceTo(playerPos);
             } else {
-                if (playerPos.y < fountainPos.getY()) {
+                if (DarkWorldUtil.isDepths(level)) {
                     distance = fountainPos.getCenter().distanceTo(playerPos);
-                } else {
-                    Vec3 playerPos2d = new Vec3(playerPos.x, 0f, playerPos.z);
-                    Vec3 fountainPos2d = new Vec3(fountainPos.getX(), 0, fountainPos.getZ());
 
-                    distance = fountainPos2d.distanceTo(playerPos2d);
+                    if (distance <= FOUNTAIN_MUSIC_DEPTHS_RANGE) {
+                        return SoundAccess.getFountainMusicDepths();
+                    }
+                } else {
+                    if (playerPos.y < fountainPos.getY()) {
+                        distance = fountainPos.getCenter().distanceTo(playerPos);
+                    } else {
+                        Vec3 playerPos2d = new Vec3(playerPos.x, 0f, playerPos.z);
+                        Vec3 fountainPos2d = new Vec3(fountainPos.getX(), 0, fountainPos.getZ());
+
+                        distance = fountainPos2d.distanceTo(playerPos2d);
+                    }
                 }
             }
 

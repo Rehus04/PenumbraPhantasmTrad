@@ -27,15 +27,15 @@ public class DarkWorldDimensionEffects extends DimensionSpecialEffects {
     protected VertexBuffer skyBuffer;
     public DarkWorldDimensionEffects() {
         super(OverworldEffects.CLOUD_LEVEL, true, SkyType.NORMAL, false, false);
-        this.skyBuffer = createLightSky();
+        this.skyBuffer = createDarkSky();
     }
 
-    public static VertexBuffer createLightSky() {
+    public static VertexBuffer createDarkSky() {
         VertexBuffer skyBuffer = new VertexBuffer(VertexBuffer.Usage.STATIC);
         Tesselator tesselator = Tesselator.getInstance();
         BufferBuilder bufferbuilder = tesselator.getBuilder();
 
-        BufferBuilder.RenderedBuffer renderedbuffer = buildSkyDisc(bufferbuilder, 16.0F);
+        BufferBuilder.RenderedBuffer renderedbuffer = buildSkyDisc(bufferbuilder, 16F);
         skyBuffer.bind();
         skyBuffer.upload(renderedbuffer);
         VertexBuffer.unbind();
@@ -43,24 +43,18 @@ public class DarkWorldDimensionEffects extends DimensionSpecialEffects {
         return skyBuffer;
     }
 
-    // Create the dark blue or black shading in the sky / the black circle below the horizon when in the void or below ground
-    public static BufferBuilder.RenderedBuffer buildSkyDisc(BufferBuilder builder, float scale)
-    {
-        // invert the base radius based on the sign of scale to ensure the faces are facing the correct way.
-        float baseRadius = 512.0F;
+    public static BufferBuilder.RenderedBuffer buildSkyDisc(BufferBuilder builder, float scale) {
+        float baseRadius = 512F;
         float invertibleBaseRadius = Math.signum(scale) * baseRadius;
-        RenderSystem.setShader(GameRenderer::getPositionShader);
-        // Create a circle with it's vertex centered by the player
-        // the circle is further above / below the horizon depending on the scale
-        builder.begin(VertexFormat.Mode.TRIANGLE_FAN, DefaultVertexFormat.POSITION);
-        builder.vertex(0.0D, (double)scale, 0.0D).endVertex();
-        // Create the circle
-        for(int i = -180; i <= 180; i += 45)
-        {
-            float radians = (float) Math.toRadians(i);
 
-            builder.vertex(invertibleBaseRadius * Mth.cos(radians), scale,
-                    baseRadius * Mth.sin(radians)).endVertex();
+        RenderSystem.setShader(GameRenderer::getPositionShader);
+
+        builder.begin(VertexFormat.Mode.TRIANGLE_FAN, DefaultVertexFormat.POSITION);
+        builder.vertex(0, scale, 0).endVertex();
+
+        for(int i = -180; i <= 180; i += 45) {
+            float radians = (float) Math.toRadians(i);
+            builder.vertex(invertibleBaseRadius * Mth.cos(radians), scale, baseRadius * Mth.sin(radians)).endVertex();
         }
 
         return builder.end();
@@ -81,7 +75,7 @@ public class DarkWorldDimensionEffects extends DimensionSpecialEffects {
         this.skyBuffer.drawWithShader(poseStack.last().pose(), projectionMatrix, RenderSystem.getShader());
         VertexBuffer.unbind();
 
-        RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
+        RenderSystem.setShaderColor(1F, 1F, 1F, 1F);
         RenderSystem.depthMask(true);
 
         return true;

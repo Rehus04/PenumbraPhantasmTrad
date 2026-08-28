@@ -6,8 +6,10 @@ import destiny.penumbra_phantasm.server.block.DarknessBlock;
 import destiny.penumbra_phantasm.server.block.GreatDoorShapeBlock;
 import destiny.penumbra_phantasm.server.block.LuminescentWaterFluidBlock;
 import destiny.penumbra_phantasm.server.capability.*;
-import destiny.penumbra_phantasm.server.fluid.PureDarknessFluidType;
 import destiny.penumbra_phantasm.server.fountain.GenericProvider;
+import destiny.penumbra_phantasm.server.egg_room.EggRoomUtil;
+import destiny.penumbra_phantasm.server.util.DarkWorldUtil;
+import destiny.penumbra_phantasm.server.item.EggItem;
 import destiny.penumbra_phantasm.server.item.ScarletBucketItem;
 import destiny.penumbra_phantasm.server.registry.*;
 import net.minecraft.core.BlockPos;
@@ -16,7 +18,6 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
@@ -26,16 +27,16 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.material.Fluids;
-import net.minecraft.world.phys.BlockHitResult;
-import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.event.AttachCapabilitiesEvent;
 import net.minecraftforge.event.entity.living.LivingAttackEvent;
+import net.minecraftforge.event.entity.living.LivingFallEvent;
+import net.minecraftforge.event.entity.living.LivingHealEvent;
 import net.minecraftforge.event.entity.player.FillBucketEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
+import net.minecraftforge.event.level.BlockEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
@@ -172,5 +173,77 @@ public class ForgeEvents {
                 event.setCanceled(true);
             }
         }
+    }
+
+    @SubscribeEvent
+    public static void onLivingHeal(LivingHealEvent event) {
+        if (!(event.getEntity() instanceof ServerPlayer player)) {
+            return;
+        }
+        if (player.hasEffect(net.minecraft.world.effect.MobEffects.REGENERATION)
+                || player.hasEffect(net.minecraft.world.effect.MobEffects.HEAL)) {
+            return;
+        }
+        if (event.getAmount() > 1.0F) {
+            return;
+        }
+
+        if (!DarkWorldUtil.isDepths(player.level())) return;
+
+        player.getCapability(CapabilityRegistry.SOUL).ifPresent(cap -> {
+            int determination = cap.determination;
+
+            if (determination <= 0) {
+                event.setAmount(event.getAmount() * 0);
+            }
+        });
+    }
+
+    @SubscribeEvent
+    public static void onEggRoomFall(LivingFallEvent event) {
+        if (event.getEntity() instanceof Player player && (EggRoomUtil.isEggRoom(player.level()) || DarkWorldUtil.isDepths(player.level()))) {
+            event.setCanceled(true);
+            player.fallDistance = 0f;
+        }
+    }
+
+    @SubscribeEvent
+    public static void onEggRoomBreak(BlockEvent.BreakEvent event) {
+        if (EggRoomUtil.isEggRoom(event.getPlayer().level())) {
+            event.setCanceled(true);
+        }
+    }
+
+    @SubscribeEvent
+    public static void onEggRoomPlace(BlockEvent.EntityPlaceEvent event) {
+        if (event.getLevel() instanceof Level level && EggRoomUtil.isEggRoom(level)) {
+            event.setCanceled(true);
+        }
+    }
+
+    @SubscribeEvent
+    public static void onEggRoomLeftClick(PlayerInteractEvent.LeftClickBlock event) {
+        if (EggRoomUtil.isEggRoom(event.getLevel())) {
+            event.setCanceled(true);
+        }
+    }
+
+    @SubscribeEvent
+    public static void onEggRoomRightClickBlock(PlayerInteractEvent.RightClickBlock event) {
+        if (!EggRoomUtil.isEggRoom(event.getLevel())) {
+            return;
+        }
+        event.setCanceled(true);
+    }
+
+    @SubscribeEvent
+    public static void onEggRoomRightClickItem(PlayerInteractEvent.RightClickItem event) {
+        if (!EggRoomUtil.isEggRoom(event.getLevel())) {
+            return;
+        }
+        if (event.getItemStack().getItem() instanceof EggItem) {
+            return;
+        }
+        event.setCanceled(true);
     }
 }

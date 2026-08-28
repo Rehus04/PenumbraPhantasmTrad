@@ -82,6 +82,11 @@ public class FireDoorBlock extends BaseEntityBlock {
     @Override
     public InteractionResult use(BlockState pState, Level pLevel, BlockPos pPos, Player pPlayer,
                                  InteractionHand pHand, BlockHitResult pHit) {
+        if (DarkWorldUtil.isDepths(pLevel)) {
+            pPlayer.displayClientMessage(Component.translatable("message.penumbra_phantasm.fire_door_depths"), true);
+            return InteractionResult.SUCCESS;
+        }
+
         if (!DarkWorldUtil.isDarkWorld(pLevel)) {
             pPlayer.displayClientMessage(Component.translatable("message.penumbra_phantasm.fire_door_not_in_dark_world"), true);
             return InteractionResult.SUCCESS;

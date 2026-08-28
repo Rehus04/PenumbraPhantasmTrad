@@ -12,6 +12,7 @@ import destiny.penumbra_phantasm.server.util.DarkWorldUtil;
 import destiny.penumbra_phantasm.server.util.ModUtil;
 import net.minecraft.client.model.HumanoidModel;
 import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.Style;
 import net.minecraft.resources.ResourceLocation;
@@ -23,12 +24,10 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.Block;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.client.extensions.common.IClientItemExtensions;
 import net.minecraftforge.common.util.LazyOptional;
@@ -40,9 +39,6 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.function.Consumer;
 
-//TODO:
-// - Transition soul hearth stuff to the capability
-
 public class SoulHearthItem extends Item {
     public static final String OWNER_UUID = "owner_uuid";
     public static final String CURRENT_UUID = "current_uuid";
@@ -52,6 +48,19 @@ public class SoulHearthItem extends Item {
 
     public SoulHearthItem(Properties pProperties) {
         super(pProperties);
+    }
+
+    public static boolean isOwnedBy(ItemStack stack, UUID playerUUID) {
+        if (stack.isEmpty() || !(stack.getItem() instanceof SoulHearthItem)) {
+            return false;
+        }
+        CompoundTag tag = stack.getTag();
+        return tag != null && tag.hasUUID(OWNER_UUID) && playerUUID.equals(tag.getUUID(OWNER_UUID));
+    }
+
+    public static boolean isHoldingOwn(Player player) {
+        UUID playerUUID = player.getUUID();
+        return isOwnedBy(player.getMainHandItem(), playerUUID) || isOwnedBy(player.getOffhandItem(), playerUUID);
     }
 
     @Override
@@ -92,6 +101,11 @@ public class SoulHearthItem extends Item {
         }
 
         if (!DarkWorldUtil.isDarkWorld(level)) return InteractionResultHolder.pass(stack);
+
+        if (DarkWorldUtil.isDepths(level)) {
+            player.displayClientMessage(Component.translatable("message.penumbra_phantasm.sealing_fountain_depths"), true);
+            return InteractionResultHolder.pass(stack);
+        }
 
         if (stack.getTag() == null) return InteractionResultHolder.pass(stack);
 

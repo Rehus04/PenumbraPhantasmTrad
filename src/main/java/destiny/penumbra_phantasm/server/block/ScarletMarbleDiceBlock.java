@@ -68,7 +68,6 @@ public class ScarletMarbleDiceBlock extends BaseEntityBlock {
         Quaternionf rotation = new Quaternionf().rotateX((float) Math.toRadians(dice.rotationX)).rotateY((float) Math.toRadians(dice.rotationY))
                 .rotateZ((float) Math.toRadians(dice.rotationZ));
 
-        // Default face directions
         Map<Integer, Vector3f> faces = Map.of(
                 1, new Vector3f(0, 0, -1), // north
                 6, new Vector3f(0, 0, 1),  // south

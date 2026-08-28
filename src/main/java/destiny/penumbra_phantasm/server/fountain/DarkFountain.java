@@ -6,6 +6,7 @@ import destiny.penumbra_phantasm.client.sound.SoundWrapper;
 import destiny.penumbra_phantasm.server.block.DarknessBlock;
 import destiny.penumbra_phantasm.server.block.entity.DarknessBlockEntity;
 import destiny.penumbra_phantasm.server.capability.DarkFountainCapability;
+import destiny.penumbra_phantasm.server.capability.SoulCapability;
 import destiny.penumbra_phantasm.server.registry.*;
 import destiny.penumbra_phantasm.server.util.DarkWorldUtil;
 import destiny.penumbra_phantasm.server.util.ModUtil;
@@ -15,6 +16,7 @@ import net.minecraft.nbt.*;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ClientboundSetEntityMotionPacket;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundSource;
@@ -24,11 +26,13 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.block.DoorBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
 import net.minecraft.world.level.portal.PortalInfo;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.common.util.ITeleporter;
 import net.minecraftforge.common.util.LazyOptional;
@@ -54,6 +58,7 @@ public class DarkFountain {
     public static final String SEALING_TICK = "sealingTick";
     public static final String SEALING_FRAME_TICK = "sealingFrameTick";
     public static final String SEALING_FRAME_TICK_PROGRESS = "sealingFrameTickProgress";
+    public static final String DEPTHS_POS = "depthsPos";
 
     public static final int OPENING_FINISH = 144;
     public static final int FILL_DELAY = 60;
@@ -62,6 +67,19 @@ public class DarkFountain {
     public static final int SEAL_DURATION = 3 * 20;
     public static final int SEAL_FLASH_DELAY = 20;
     public static final int SEAL_FLASH_DURATION = 30;
+
+    public static final int DEPTHS_XZ_SCALE = -10;
+    public static final int DEPTHS_FOUNTAIN_Y_OFFSET = 64;
+
+    public static final double DEPTHS_PIERCE_XZ = 1;
+    public static final double DEPTHS_PIERCE_PUSH_STRENGTH = 0.07;
+
+    public static final double DEPTHS_SUCTION_XZ = 8.0;
+    public static final double DEPTHS_SUCTION_Y = 64.0;
+
+    public static final double DEPTHS_CONTACT_XZ = 3;
+    public static final double DEPTHS_CONTACT_Y = 3;
+    public static final double DEPTHS_EJECT_OFFSET = -0.45;
 
     public BlockPos fountainPos;
     public ResourceKey<Level> fountainDimension;
@@ -72,12 +90,15 @@ public class DarkFountain {
     public int frame;
     public int frameOptimized;
     public HashSet<UUID> teleportedEntities;
+    public HashSet<UUID> depthsTransit = new HashSet<>();
     public List<DarkRoom> rooms = new ArrayList<>();
     public int rescanTimer = 0;
     public List<Integer> shockwaveTickers;
     public int sealingTick;
     public int sealingFrameTick;
     public float sealingFrameTickProgress;
+    @Nullable
+    public BlockPos depthsPos;
 
     public int openingTickTarget;
     public float openingTickClientO;
@@ -150,8 +171,27 @@ public class DarkFountain {
                         );
                     }
                 }
+            } else if (DarkWorldUtil.isDepths(level)) {
+                if (level instanceof ServerLevel serverLevel) {
+                    if (sealingTick < 0 && openingTick < 0) {
+                        tickDepthsFountain(serverLevel);
+                    }
+
+                    if (openingTick == 1) {
+                        serverLevel.players().forEach(player -> {
+                            level.playSound(null, player.getOnPos().above(), SoundRegistry.FOUNTAIN_MAKE_DEPTHS.get(), SoundSource.AMBIENT, 0.75f, 1f);
+                        });
+                    }
+
+                    if (sealingTick >= 0) {
+                        if (sealingTick < SEAL_DURATION + SEAL_FLASH_DELAY + SEAL_FLASH_DURATION + 40) {
+                            sealingTick++;
+                        }
+                    }
+                }
             } else {
                 if (level instanceof ServerLevel serverLevel) {
+                    ensureDepthsTwin(serverLevel);
                     tickDarkWorldFountainPushing(serverLevel);
                 }
 
@@ -230,7 +270,7 @@ public class DarkFountain {
                 }
             }
 
-            if (this.openingTick == 1) {
+            if (!DarkWorldUtil.isDepths(level) && this.openingTick == 1) {
                 level.playSound(null, fountainPos, SoundRegistry.FOUNTAIN_MAKE.get(), SoundSource.AMBIENT, 0.5f, 1f);
             }
 
@@ -262,7 +302,12 @@ public class DarkFountain {
             }
         }
 
-        PacketHandlerRegistry.INSTANCE.send(PacketDistributor.DIMENSION.with(level::dimension), new ClientBoundSingleFountainData(this));
+        boolean stillPresent = level.getCapability(CapabilityRegistry.DARK_FOUNTAIN)
+                .map(cap -> cap.darkFountains.get(this.fountainPos) == this)
+                .orElse(false);
+        if (stillPresent) {
+            PacketHandlerRegistry.INSTANCE.send(PacketDistributor.DIMENSION.with(level::dimension), new ClientBoundSingleFountainData(this));
+        }
     }
 
     public void clientTickOpening() {
@@ -405,6 +450,7 @@ public class DarkFountain {
             }
 
             darkFountainCapability.removeDarkFountain(level, fountainPos);
+            removeDepthsTwin(soulLevel);
 
             if (level instanceof ServerLevel serverLevel) {
                 ChunkPos soulChunk = new ChunkPos(this.fountainPos);
@@ -907,29 +953,52 @@ public class DarkFountain {
 
     private void tickDarkWorldFountainPushing(ServerLevel level) {
         AABB pushBox = new AABB(fountainPos.offset(0, 5, 0)).inflate(5).setMaxY(level.dimensionType().height());
+        Vec3 center = fountainPos.getCenter();
 
         for (Entity entity : level.getEntitiesOfClass(Entity.class, pushBox)) {
             Vec3 entityPos = entity.position();
+            double dx = entityPos.x - center.x;
+            double dz = entityPos.z - center.z;
+            double xz = Math.sqrt(dx * dx + dz * dz);
+
+            double pushStrength = 3.0;
+            boolean showPushMessage = true;
+
+            if (entity instanceof ServerPlayer serverPlayer) {
+                if (xz >= 4.0) {
+                    this.depthsTransit.remove(serverPlayer.getUUID());
+                }
+
+                if (canPierceFountain(serverPlayer) && !this.depthsTransit.contains(serverPlayer.getUUID())) {
+                    if (xz < DEPTHS_PIERCE_XZ && entityPos.y > fountainPos.getY() - 1.0) {
+                        tryEnterDepths(serverPlayer, level);
+                        continue;
+                    }
+                    if (serverPlayer.isCreative()) {
+                        continue;
+                    }
+                    pushStrength = DEPTHS_PIERCE_PUSH_STRENGTH;
+                    showPushMessage = false;
+                }
+            }
+
             Vec3 awayVec;
             double distance;
 
-            if (entityPos.y < fountainPos.getCenter().y) {
-                awayVec = entityPos.subtract(fountainPos.getCenter());
+            if (entityPos.y < center.y) {
+                awayVec = entityPos.subtract(center);
             } else {
-                double dx = entityPos.x - fountainPos.getCenter().x;
-                double dz = entityPos.z - fountainPos.getCenter().z;
-
                 awayVec = new Vec3(dx, 0.0, dz);
             }
 
             distance = awayVec.length();
-            if (distance >= 4) {
+            if (distance >= 4 || distance < 0.0001) {
                 continue;
             }
 
             Vec3 directionVec = awayVec.scale(1.0 / distance);
             double falloff = 1.0 - distance / 4;
-            Vec3 pushAwayVec = directionVec.scale(3 * falloff);
+            Vec3 pushAwayVec = directionVec.scale(pushStrength * falloff);
 
             entity.push(pushAwayVec.x, pushAwayVec.y, pushAwayVec.z);
 
@@ -937,14 +1006,253 @@ public class DarkFountain {
                 serverPlayer.connection.send(new ClientboundSetEntityMotionPacket(serverPlayer));
             }
 
-            if (entity instanceof Player player) {
+            if (showPushMessage && entity instanceof Player player) {
                 player.displayClientMessage(Component.translatable("message.penumbra_phantasm.pushed_away_by_fountain"), true);
             }
         }
     }
 
+    private static boolean canPierceFountain(ServerPlayer player) {
+        if (player.isCreative()) return true;
+
+        SoulCapability soulCap = player.getCapability(CapabilityRegistry.SOUL).orElse(null);
+
+        return soulCap.determination >= 100;
+    }
+
+    private void tryEnterDepths(ServerPlayer player, ServerLevel darkLevel) {
+        ensureDepthsTwin(darkLevel);
+
+        if (this.depthsPos == null) return;
+
+        ServerLevel depths = DarkWorldUtil.getDepths(darkLevel.getServer());
+        if (depths == null) return;
+
+        DarkFountain depthsFountain = depths.getCapability(CapabilityRegistry.DARK_FOUNTAIN)
+                .map(cap -> cap.darkFountains.get(this.depthsPos)).orElse(null);
+
+        if (depthsFountain == null) return;
+
+        player.getCapability(CapabilityRegistry.SCREEN_ANIMATION).ifPresent(cap -> {
+            cap.depthsEntryTicker = 0;
+            cap.darknessOverlayTicker = TRANSPORT_TICKER_DURATION;
+            cap.syncToClient(player);
+        });
+
+        Vec3 spawn = Vec3.atCenterOf(this.depthsPos).add(DEPTHS_EJECT_OFFSET, -1.0, 0.0);
+        player.fallDistance = 0f;
+        player.teleportTo(depths, spawn.x, spawn.y, spawn.z, player.getYRot(), player.getXRot());
+        player.fallDistance = 0f;
+        player.setDeltaMovement(0.0, -10.0, 0.0);
+        player.connection.send(new ClientboundSetEntityMotionPacket(player));
+        depthsFountain.depthsTransit.add(player.getUUID());
+        depthsFountain.teleportedEntities.add(player.getUUID());
+    }
+
+    private void tickDepthsFountain(ServerLevel level) {
+        Vec3 opening = this.fountainPos.getCenter();
+        double suctionY = DEPTHS_SUCTION_Y;
+        AABB suctionBox = new AABB(opening, opening).inflate(DEPTHS_SUCTION_XZ, 0.0, DEPTHS_SUCTION_XZ).expandTowards(0.0, -suctionY, 0.0)
+                .expandTowards(0.0, 2.0, 0.0);
+        AABB contactBox = new AABB(opening, opening).inflate(DEPTHS_CONTACT_XZ, DEPTHS_CONTACT_Y, DEPTHS_CONTACT_XZ);
+
+        for (ServerPlayer player : level.getEntitiesOfClass(ServerPlayer.class, suctionBox)) {
+            double dx = player.getX() - opening.x;
+            double dz = player.getZ() - opening.z;
+            double xz = Math.sqrt(dx * dx + dz * dz);
+
+            if (xz > DEPTHS_SUCTION_XZ) {
+                this.teleportedEntities.remove(player.getUUID());
+                this.depthsTransit.remove(player.getUUID());
+
+                continue;
+            }
+
+            if (this.teleportedEntities.contains(player.getUUID()) || this.depthsTransit.contains(player.getUUID())) {
+                continue;
+            }
+
+            if (player.getY() > opening.y + 0.5) {
+                continue;
+            }
+            double dy = opening.y - player.getY();
+            if (dy < -0.5 || dy > suctionY) {
+                continue;
+            }
+
+            if (player.getBoundingBox().intersects(contactBox) || player.getEyeY() >= opening.y - 0.35) {
+                ejectToDarkWorld(player, level);
+                continue;
+            }
+
+            Vec3 toOpening = opening.subtract(player.position());
+            double dist = Math.max(toOpening.length(), 0.0001);
+            Vec3 pull = toOpening.scale((0.45 + 0.55 * (1.0 - dist / suctionY)) / dist);
+            player.push(pull.x, pull.y, pull.z);
+            player.connection.send(new ClientboundSetEntityMotionPacket(player));
+        }
+    }
+
+    private void ejectToDarkWorld(ServerPlayer player, ServerLevel depthsLevel) {
+        ServerLevel darkLevel = depthsLevel.getServer().getLevel(this.destinationDimension);
+        if (darkLevel == null) {
+            return;
+        }
+        DarkFountain darkFountain = darkLevel.getCapability(CapabilityRegistry.DARK_FOUNTAIN)
+                .map(cap -> cap.darkFountains.get(this.destinationPos)).orElse(null);
+
+        Vec3 dest = Vec3.atCenterOf(this.destinationPos).add(DEPTHS_EJECT_OFFSET, 0.0, 0.0);
+        player.teleportTo(darkLevel, dest.x, dest.y, dest.z, player.getYRot(), player.getXRot());
+        player.setDeltaMovement(0.45, 0.15, 0.0);
+        player.connection.send(new ClientboundSetEntityMotionPacket(player));
+        if (darkFountain != null) {
+            darkFountain.depthsTransit.add(player.getUUID());
+        }
+    }
+
+    private void ensureDepthsTwin(ServerLevel darkLevel) {
+        if (DarkWorldUtil.isDepths(darkLevel) || !DarkWorldUtil.isDarkWorld(darkLevel)) {
+            return;
+        }
+        ServerLevel depths = DarkWorldUtil.getDepths(darkLevel.getServer());
+        if (depths == null) {
+            return;
+        }
+        if (this.depthsPos != null) {
+            DarkFountain existing = depths.getCapability(CapabilityRegistry.DARK_FOUNTAIN)
+                    .map(cap -> cap.darkFountains.get(this.depthsPos)).orElse(null);
+            if (existing != null) {
+                ChunkPos chunkPos = new ChunkPos(existing.fountainPos);
+                depths.setChunkForced(chunkPos.x, chunkPos.z, true);
+                BlockPos heightmap = depths.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, existing.fountainPos);
+                depths.setChunkForced(chunkPos.x, chunkPos.z, false);
+                int aboveGround = existing.fountainPos.getY() - heightmap.getY();
+                if (aboveGround < DEPTHS_FOUNTAIN_Y_OFFSET) {
+                    BlockPos moved = new BlockPos(existing.fountainPos.getX(),
+                            heightmap.getY() + DEPTHS_FOUNTAIN_Y_OFFSET,
+                            existing.fountainPos.getZ());
+                    depths.getCapability(CapabilityRegistry.DARK_FOUNTAIN).ifPresent(cap -> {
+                        cap.darkFountains.remove(existing.fountainPos);
+                        existing.fountainPos = moved;
+                        cap.darkFountains.put(moved, existing);
+                    });
+                    this.depthsPos = moved;
+                }
+                return;
+            }
+        }
+
+        int depthsX = scaledDepthsX(this.fountainPos.getX());
+        int depthsZ = scaledDepthsZ(this.fountainPos.getZ());
+        Vec2 depthsPos = new Vec2(depthsX, depthsZ);
+        if (isDepthsXzOccupied(depths, depthsPos)) {
+            return;
+        }
+
+        BlockPos pos = resolveDepthsFountainPos(depths, new Vec2(this.fountainPos.getX(), this.fountainPos.getZ()));
+        depths.getCapability(CapabilityRegistry.DARK_FOUNTAIN).ifPresent(cap -> {
+            cap.addDarkFountain(pos, depths.dimension(), this.fountainPos, darkLevel.dimension(),
+                    -1, 0, 0, 0, new HashSet<>(), new ArrayList<>(), -1, -1, 0);
+        });
+        this.depthsPos = pos;
+    }
+
+    private void removeDepthsTwin(ServerLevel darkLevel) {
+        if (this.depthsPos == null) {
+            return;
+        }
+        ServerLevel depths = DarkWorldUtil.getDepths(darkLevel.getServer());
+        if (depths == null) {
+            return;
+        }
+        depths.getCapability(CapabilityRegistry.DARK_FOUNTAIN).ifPresent(cap ->
+                cap.removeDarkFountain(depths, this.depthsPos));
+        this.depthsPos = null;
+    }
+
+    public static int scaledDepthsX(int originX) {
+        return originX * DEPTHS_XZ_SCALE;
+    }
+
+    public static int scaledDepthsZ(int originZ) {
+        return originZ * DEPTHS_XZ_SCALE;
+    }
+
+    public static boolean isDepthsXzOccupied(MinecraftServer server, Vec2 depthsPos) {
+        Vec2 scaledPos = new Vec2(DarkFountain.scaledDepthsX((int) depthsPos.x), DarkFountain.scaledDepthsZ((int) depthsPos.y));
+        ServerLevel depths = DarkWorldUtil.getDepths(server);
+        if (depths == null) {
+            return false;
+        }
+        return isDepthsXzOccupied(depths, scaledPos);
+    }
+
+    public static boolean isDepthsXzOccupied(ServerLevel depths, Vec2 depthsPos) {
+        return depths.getCapability(CapabilityRegistry.DARK_FOUNTAIN).map(cap -> {
+            for (DarkFountain fountain : cap.darkFountains.values()) {
+                Vec2 originPos = new Vec2(depthsPos.x, depthsPos.y);
+                Vec2 fountainPos = new Vec2(fountain.fountainPos.getX(), fountain.fountainPos.getZ());
+
+                return originPos.distanceToSqr(fountainPos) < Mth.square(16);
+            }
+            return false;
+        }).orElse(false);
+    }
+
+    public static Vec2 getBumpedDepthsXZ(ServerLevel depths, Vec2 originPos) {
+        DarkFountainCapability capability;
+        LazyOptional<DarkFountainCapability> darkLazyCapability = depths.getCapability(CapabilityRegistry.DARK_FOUNTAIN);
+        if(darkLazyCapability.isPresent() && darkLazyCapability.resolve().isPresent())
+            capability = darkLazyCapability.resolve().get();
+        else {
+            return new Vec2(originPos.x, originPos.y);
+        }
+
+        List<Vec2> fountainsTooClose = new ArrayList<>();
+
+        for (DarkFountain fountain : capability.darkFountains.values()) {
+            Vec2 fountainPos = new Vec2(fountain.fountainPos.getX(), fountain.fountainPos.getZ());
+            float distance = originPos.distanceToSqr(fountainPos);
+
+            if (distance < Mth.square(32)) {
+                fountainsTooClose.add(fountainPos);
+            }
+        }
+
+        if (fountainsTooClose.isEmpty()) {
+            return new Vec2(originPos.x, originPos.y);
+        }
+
+        Vec2 combinedAwayVec = Vec2.ZERO;
+        for (Vec2 conflictPos : fountainsTooClose) {
+            Vec2 awayVec = new Vec2(originPos.x - conflictPos.x, originPos.y - conflictPos.y);
+
+            awayVec = awayVec.normalized();
+            combinedAwayVec = combinedAwayVec.add(awayVec);
+        }
+
+        return originPos.add(combinedAwayVec.normalized().scale(32));
+    }
+
+    public static BlockPos resolveDepthsFountainPos(ServerLevel depths, Vec2 originXZ) {
+        BlockPos scaled = new BlockPos(scaledDepthsX((int) originXZ.x), depths.getMinBuildHeight(), scaledDepthsZ((int) originXZ.y));
+        ChunkPos chunkPos = new ChunkPos(scaled);
+
+        depths.setChunkForced(chunkPos.x, chunkPos.z, true);
+        BlockPos heightmap = depths.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, scaled);
+        BlockPos pos = new BlockPos(scaled.getX(), heightmap.getY() + DEPTHS_FOUNTAIN_Y_OFFSET, scaled.getZ());
+        depths.setChunkForced(chunkPos.x, chunkPos.z, false);
+
+        return pos;
+    }
+
     private void tickSoundPackets(Level level) {
-        if (DarkWorldUtil.isDarkWorld(level)) {
+        if (DarkWorldUtil.isDepths(level)) {
+            PacketHandlerRegistry.INSTANCE.send(
+                    PacketDistributor.TRACKING_CHUNK.with(() -> level.getChunkAt(this.getFountainPos())),
+                    new ClientBoundSoundPackets.FountainWindDepths(this.fountainPos, false)
+            );
+        } else if (DarkWorldUtil.isDarkWorld(level)) {
             PacketHandlerRegistry.INSTANCE.send(
                     PacketDistributor.TRACKING_CHUNK.with(() -> level.getChunkAt(this.getFountainPos())),
                     new ClientBoundSoundPackets.FountainWind(this.fountainPos, false));
@@ -1025,6 +1333,9 @@ public class DarkFountain {
         tag.putInt(SEALING_TICK, sealingTick);
         tag.putInt(SEALING_FRAME_TICK, sealingFrameTick);
         tag.putFloat(SEALING_FRAME_TICK_PROGRESS, sealingFrameTickProgress);
+        if (depthsPos != null) {
+            tag.put(DEPTHS_POS, NbtUtils.writeBlockPos(depthsPos));
+        }
 
         return tag;
     }
@@ -1057,6 +1368,9 @@ public class DarkFountain {
         float sealingFrameTickProgress = tag.getFloat(SEALING_FRAME_TICK_PROGRESS);
 
         DarkFountain fountain = new DarkFountain(fountainPos, fountainDimension, destinationPos, destinationDimension, openingTick, frameTick, frame, frameOptimized, teleportedEntities, shockwaveTickers, sealingTick, sealingFrameTick, sealingFrameTickProgress);
+        if (tag.contains(DEPTHS_POS)) {
+            fountain.depthsPos = NbtUtils.readBlockPos(tag.getCompound(DEPTHS_POS));
+        }
 
         if (tag.contains(ROOMS)) {
             ListTag roomsTag = tag.getList(ROOMS, Tag.TAG_COMPOUND);
@@ -1093,6 +1407,7 @@ public class DarkFountain {
         this.sealingTick = fountain.sealingTick;
         this.sealingFrameTick = fountain.sealingFrameTick;
         this.sealingFrameTickProgress = fountain.sealingFrameTickProgress;
+        this.depthsPos = fountain.depthsPos;
     }
 
     public BlockPos getFountainPos() { return fountainPos; }
