@@ -1,6 +1,7 @@
 package destiny.penumbra_phantasm.server.item;
 
 import destiny.penumbra_phantasm.PenumbraPhantasm;
+import destiny.penumbra_phantasm.client.network.ClientBoundTextBoxPacket;
 import destiny.penumbra_phantasm.server.advancement.TriggerCriterions;
 import destiny.penumbra_phantasm.server.capability.DarkFountainCapability;
 import destiny.penumbra_phantasm.server.capability.SoulCapability;
@@ -8,6 +9,7 @@ import destiny.penumbra_phantasm.server.entity.SealingSoulEntity;
 import destiny.penumbra_phantasm.server.fountain.DarkFountain;
 import destiny.penumbra_phantasm.server.registry.CapabilityRegistry;
 import destiny.penumbra_phantasm.server.registry.EntityRegistry;
+import destiny.penumbra_phantasm.server.registry.PacketHandlerRegistry;
 import destiny.penumbra_phantasm.server.util.DarkWorldUtil;
 import destiny.penumbra_phantasm.server.util.ModUtil;
 import net.minecraft.client.model.HumanoidModel;
@@ -31,6 +33,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.client.extensions.common.IClientItemExtensions;
 import net.minecraftforge.common.util.LazyOptional;
+import net.minecraftforge.network.PacketDistributor;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -54,12 +57,15 @@ public class SoulHearthItem extends Item {
         if (stack.isEmpty() || !(stack.getItem() instanceof SoulHearthItem)) {
             return false;
         }
+
         CompoundTag tag = stack.getTag();
+
         return tag != null && tag.hasUUID(OWNER_UUID) && playerUUID.equals(tag.getUUID(OWNER_UUID));
     }
 
     public static boolean isHoldingOwn(Player player) {
         UUID playerUUID = player.getUUID();
+
         return isOwnedBy(player.getMainHandItem(), playerUUID) || isOwnedBy(player.getOffhandItem(), playerUUID);
     }
 
@@ -92,22 +98,26 @@ public class SoulHearthItem extends Item {
         ItemStack stack = player.getItemInHand(hand);
 
         if (stack.getTag() == null) return InteractionResultHolder.fail(stack);
+        if (!DarkWorldUtil.isDarkWorld(level)) return InteractionResultHolder.pass(stack);
 
+        //Player rejection textbox
         UUID ownerUuid = stack.getTag().getUUID(OWNER_UUID);
-
         if (!player.getUUID().equals(ownerUuid)) {
-            player.displayClientMessage(Component.translatable("message.penumbra_phantasm.soul_hearth_reject"), true);
+            if (player instanceof ServerPlayer serverPlayer) {
+                PacketHandlerRegistry.INSTANCE.send(PacketDistributor.PLAYER.with(() -> serverPlayer),
+                        new ClientBoundTextBoxPacket(ClientBoundTextBoxPacket.SOUL_HEARTH_REJECT));
+            }
             return InteractionResultHolder.fail(stack);
         }
 
-        if (!DarkWorldUtil.isDarkWorld(level)) return InteractionResultHolder.pass(stack);
-
+        //Depths use textbox
         if (DarkWorldUtil.isDepths(level)) {
-            player.displayClientMessage(Component.translatable("message.penumbra_phantasm.sealing_fountain_depths"), true);
+            if (player instanceof ServerPlayer serverPlayer) {
+                PacketHandlerRegistry.INSTANCE.send(PacketDistributor.PLAYER.with(() -> serverPlayer),
+                        new ClientBoundTextBoxPacket(ClientBoundTextBoxPacket.SOUL_HEARTH_SEALING_FOUNTAIN_DEPTHS));
+            }
             return InteractionResultHolder.pass(stack);
         }
-
-        if (stack.getTag() == null) return InteractionResultHolder.pass(stack);
 
         DarkFountainCapability darkFountainCapability = null;
         LazyOptional<DarkFountainCapability> darkLazyCapability = level.getCapability(CapabilityRegistry.DARK_FOUNTAIN);
@@ -135,50 +145,32 @@ public class SoulHearthItem extends Item {
         }
 
         if (darkFountain == null){
-            player.displayClientMessage(Component.translatable("message.penumbra_phantasm.sealing_fountain_no_fountain_nearby"), true);
             return InteractionResultHolder.pass(stack);
         }
 
-        if (player instanceof ServerPlayer) {
+        if (player instanceof ServerPlayer serverPlayer) {
             SoulCapability soulCap = player.getCapability(CapabilityRegistry.SOUL).orElse(null);
-            int soulType = soulCap.soulType;
             int determination = soulCap.determination;
 
             if (determination < 100) {
-                player.displayClientMessage(Component.translatable("message.penumbra_phantasm.sealing_fountain_not_enough_determination"), true);
+                PacketHandlerRegistry.INSTANCE.send(PacketDistributor.PLAYER.with(() -> serverPlayer),
+                        new ClientBoundTextBoxPacket(ClientBoundTextBoxPacket.SOUL_HEARTH_SEALING_FOUNTAIN_NOT_ENOUGH_DETERMINATION));
                 return InteractionResultHolder.pass(stack);
             }
 
-            if (darkFountain.sealingFrameTick >= 0){
-                player.displayClientMessage(Component.translatable("message.penumbra_phantasm.sealing_fountain_already_being_sealed"), true);
+            if (darkFountain.sealingFrameTick >= 0) {
+                PacketHandlerRegistry.INSTANCE.send(PacketDistributor.PLAYER.with(() -> serverPlayer),
+                        new ClientBoundTextBoxPacket(ClientBoundTextBoxPacket.SOUL_HEARTH_SEALING_FOUNTAIN_NOT_ENOUGH_DETERMINATION));
                 return InteractionResultHolder.pass(stack);
             }
 
-            if (!level.isClientSide()) {
-                SealingSoulEntity soulEntity = new SealingSoulEntity(EntityRegistry.SEALING_SOUL.get(), level);
-                soulEntity.setSoulType(soulType);
+            PacketHandlerRegistry.INSTANCE.send(PacketDistributor.PLAYER.with(() -> serverPlayer),
+                    new ClientBoundTextBoxPacket(ClientBoundTextBoxPacket.SOUL_HEARTH_SEALING_FOUNTAIN_CHOICE));
 
-                float yawRad = player.getYRot() * Mth.DEG_TO_RAD;
-                Vec3 playerPos = player.position();
-                double forwardX = -Mth.sin(yawRad);
-                double forwardZ = Mth.cos(yawRad);
-                soulEntity.setPos(playerPos.x + forwardX, playerPos.y + 1, playerPos.z + (forwardZ * 2));
-
-                level.addFreshEntity(soulEntity);
-            }
-
-            if (player instanceof ServerPlayer serverPlayer) {
-                TriggerCriterions.DARK_FOUNTAIN_SEAL.trigger(serverPlayer);
-            }
-
-            player.getCooldowns().addCooldown(stack.getItem(), 10 * 20);
-
-            if (!player.isCreative()) {
-                soulCap.determination = 0;
-            }
+            return InteractionResultHolder.pass(stack);
         }
 
-        return InteractionResultHolder.consume(stack);
+        return InteractionResultHolder.fail(stack);
     }
 
     @Override

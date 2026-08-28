@@ -158,10 +158,10 @@ public class PacketHandlerRegistry {
                 .consumerMainThread(ClientBoundTextBoxPacket::handle)
                 .add();
 
-        INSTANCE.messageBuilder(ServerBoundTextBoxPacket.class, index++, NetworkDirection.PLAY_TO_SERVER)
-                .encoder(ServerBoundTextBoxPacket::encode)
-                .decoder(ServerBoundTextBoxPacket::new)
-                .consumerMainThread(ServerBoundTextBoxPacket::handle)
+        INSTANCE.messageBuilder(ServerBoundTextBoxChoicePacket.class, index++, NetworkDirection.PLAY_TO_SERVER)
+                .encoder(ServerBoundTextBoxChoicePacket::encode)
+                .decoder(ServerBoundTextBoxChoicePacket::new)
+                .consumerMainThread(ServerBoundTextBoxChoicePacket::handle)
                 .add();
 
         INSTANCE.messageBuilder(ClientBoundRemoveFountainPacket.class, index++, NetworkDirection.PLAY_TO_CLIENT)
@@ -180,6 +180,16 @@ public class PacketHandlerRegistry {
                 .encoder(ServerBoundEggRoomReadyPacket::encode)
                 .decoder(ServerBoundEggRoomReadyPacket::decode)
                 .consumerMainThread(ServerBoundEggRoomReadyPacket::handle)
+                .add();
+
+        INSTANCE.messageBuilder(ServerBoundSealingSoulPacket.class, index++, NetworkDirection.PLAY_TO_SERVER)
+                .encoder(ServerBoundSealingSoulPacket::encode)
+                .decoder(ServerBoundSealingSoulPacket::decode)
+                .consumerMainThread(ServerBoundSealingSoulPacket::handle)
+                .add();
+
+        INSTANCE.messageBuilder(ServerBoundEggRoomInteractPacket.class, index++, NetworkDirection.PLAY_TO_SERVER)
+                .consumerMainThread(ServerBoundEggRoomInteractPacket::handle)
                 .add();
     }
 }

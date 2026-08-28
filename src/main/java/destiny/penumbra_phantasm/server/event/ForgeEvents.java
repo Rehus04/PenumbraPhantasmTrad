@@ -7,7 +7,7 @@ import destiny.penumbra_phantasm.server.block.GreatDoorShapeBlock;
 import destiny.penumbra_phantasm.server.block.LuminescentWaterFluidBlock;
 import destiny.penumbra_phantasm.server.capability.*;
 import destiny.penumbra_phantasm.server.fountain.GenericProvider;
-import destiny.penumbra_phantasm.server.egg_room.EggRoomUtil;
+import destiny.penumbra_phantasm.server.egg_room.CardKingdomEggRoomUtil;
 import destiny.penumbra_phantasm.server.util.DarkWorldUtil;
 import destiny.penumbra_phantasm.server.item.EggItem;
 import destiny.penumbra_phantasm.server.item.ScarletBucketItem;
@@ -201,7 +201,7 @@ public class ForgeEvents {
 
     @SubscribeEvent
     public static void onEggRoomFall(LivingFallEvent event) {
-        if (event.getEntity() instanceof Player player && (EggRoomUtil.isEggRoom(player.level()) || DarkWorldUtil.isDepths(player.level()))) {
+        if (event.getEntity() instanceof Player player && (CardKingdomEggRoomUtil.isEggRoom(player.level()) || DarkWorldUtil.isDepths(player.level()))) {
             event.setCanceled(true);
             player.fallDistance = 0f;
         }
@@ -209,28 +209,28 @@ public class ForgeEvents {
 
     @SubscribeEvent
     public static void onEggRoomBreak(BlockEvent.BreakEvent event) {
-        if (EggRoomUtil.isEggRoom(event.getPlayer().level())) {
+        if (CardKingdomEggRoomUtil.isEggRoom(event.getPlayer().level())) {
             event.setCanceled(true);
         }
     }
 
     @SubscribeEvent
     public static void onEggRoomPlace(BlockEvent.EntityPlaceEvent event) {
-        if (event.getLevel() instanceof Level level && EggRoomUtil.isEggRoom(level)) {
+        if (event.getLevel() instanceof Level level && CardKingdomEggRoomUtil.isEggRoom(level)) {
             event.setCanceled(true);
         }
     }
 
     @SubscribeEvent
     public static void onEggRoomLeftClick(PlayerInteractEvent.LeftClickBlock event) {
-        if (EggRoomUtil.isEggRoom(event.getLevel())) {
+        if (CardKingdomEggRoomUtil.isEggRoom(event.getLevel())) {
             event.setCanceled(true);
         }
     }
 
     @SubscribeEvent
     public static void onEggRoomRightClickBlock(PlayerInteractEvent.RightClickBlock event) {
-        if (!EggRoomUtil.isEggRoom(event.getLevel())) {
+        if (!CardKingdomEggRoomUtil.isEggRoom(event.getLevel())) {
             return;
         }
         event.setCanceled(true);
@@ -238,7 +238,7 @@ public class ForgeEvents {
 
     @SubscribeEvent
     public static void onEggRoomRightClickItem(PlayerInteractEvent.RightClickItem event) {
-        if (!EggRoomUtil.isEggRoom(event.getLevel())) {
+        if (!CardKingdomEggRoomUtil.isEggRoom(event.getLevel())) {
             return;
         }
         if (event.getItemStack().getItem() instanceof EggItem) {

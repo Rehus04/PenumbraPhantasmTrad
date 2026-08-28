@@ -3,8 +3,11 @@ package destiny.penumbra_phantasm.client.render.screen;
 import destiny.penumbra_phantasm.PenumbraPhantasm;
 import destiny.penumbra_phantasm.client.render.RenderBlitUtil;
 import destiny.penumbra_phantasm.client.render.menu.CheshireChestMenu;
+import destiny.penumbra_phantasm.server.util.DarkWorldUtil;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
+import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
@@ -58,6 +61,12 @@ public class CheshireChestScreen extends AbstractContainerScreen<CheshireChestMe
     protected void renderBg(GuiGraphics graphics, float partialTick, int mouseX, int mouseY) {
         float t = (float) this.glowTicker / (float) GLOW_TICKER_UPPER_BOUND;
         float glow = Mth.sin(t * Mth.PI);
+
+        LocalPlayer player = Minecraft.getInstance().player;
+
+        if (player != null && DarkWorldUtil.isDepths(player.level())) {
+            glow = 0;
+        }
 
         graphics.blit(TEXTURE, this.leftPos - 6, this.topPos + 4, 0, 0, this.imageWidth, this.imageHeight);
         RenderBlitUtil.blitGui(graphics, TEXTURE_GLOW, this.leftPos - 6, this.topPos + 4, 0, 0, this.imageWidth, this.imageHeight, glow, glow, glow, 1);

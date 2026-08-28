@@ -6,7 +6,7 @@ import destiny.penumbra_phantasm.server.fountain.DarkFountain;
 import destiny.penumbra_phantasm.client.network.ClientBoundAnimationPacket;
 import destiny.penumbra_phantasm.server.registry.CapabilityRegistry;
 import destiny.penumbra_phantasm.server.registry.PacketHandlerRegistry;
-import destiny.penumbra_phantasm.server.egg_room.EggRoomUtil;
+import destiny.penumbra_phantasm.server.egg_room.CardKingdomEggRoomUtil;
 import destiny.penumbra_phantasm.server.util.DarkWorldUtil;
 import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
@@ -99,7 +99,7 @@ public class ScreenAnimationCapability implements INBTSerializable<CompoundTag> 
             }
         }
 
-        if (EggRoomUtil.isEggRoom(level)) {
+        if (CardKingdomEggRoomUtil.isEggRoom(level)) {
             previousLocation = currentLocation;
             titleAlphaTicker = -1;
         } else if (!previousLocation.equals(currentLocation)) {

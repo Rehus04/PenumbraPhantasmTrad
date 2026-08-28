@@ -8,6 +8,7 @@ import com.mojang.datafixers.util.Pair;
 import destiny.penumbra_phantasm.PenumbraPhantasm;
 import destiny.penumbra_phantasm.client.render.RenderBlitUtil;
 import destiny.penumbra_phantasm.client.render.screen.component.DarkWorldButton;
+import destiny.penumbra_phantasm.server.util.DarkWorldUtil;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.HotbarManager;
 import net.minecraft.client.Minecraft;
@@ -711,6 +712,13 @@ public class DarkWorldCreativeModeInventoryScreen extends EffectRenderingInvento
         ResourceLocation glowLocation = new ResourceLocation(PenumbraPhantasm.MODID, "textures/gui/dark_world/container/creative_inventory/tab_items_glow.png");
         float t = (float) this.glowTicker / (float) GLOW_TICKER_UPPER_BOUND;
         float glow = Mth.sin(t * Mth.PI);
+
+        LocalPlayer player = Minecraft.getInstance().player;
+
+        if (player != null && DarkWorldUtil.isDepths(player.level())) {
+            glow = 0;
+        }
+
         int w = 207;
         int h = 148;
 

@@ -2,7 +2,6 @@ package destiny.penumbra_phantasm.server.network;
 
 import destiny.penumbra_phantasm.server.block.FireDoorBlock;
 import destiny.penumbra_phantasm.server.block.entity.FireDoorBlockEntity;
-import destiny.penumbra_phantasm.server.registry.SoundRegistry;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.FriendlyByteBuf;
@@ -10,9 +9,7 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.TickTask;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraftforge.network.NetworkEvent;

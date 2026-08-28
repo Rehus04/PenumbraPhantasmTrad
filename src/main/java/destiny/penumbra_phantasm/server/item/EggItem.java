@@ -25,7 +25,7 @@ public class EggItem extends Item {
 		}
 		if (player instanceof ServerPlayer serverPlayer) {
 			PacketHandlerRegistry.INSTANCE.send(PacketDistributor.PLAYER.with(() -> serverPlayer),
-					new ClientBoundTextBoxPacket(ClientBoundTextBoxPacket.USED_EGG));
+					new ClientBoundTextBoxPacket(ClientBoundTextBoxPacket.USE_EGG));
 		}
 		return InteractionResultHolder.sidedSuccess(stack, level.isClientSide());
 	}

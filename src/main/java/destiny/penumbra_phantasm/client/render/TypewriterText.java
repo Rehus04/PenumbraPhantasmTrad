@@ -1,4 +1,4 @@
-package destiny.penumbra_phantasm.client.render.textbox;
+package destiny.penumbra_phantasm.client.render;
 
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;

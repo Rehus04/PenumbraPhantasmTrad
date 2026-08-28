@@ -3,7 +3,7 @@ package destiny.penumbra_phantasm.client.sound;
 import destiny.penumbra_phantasm.server.capability.DarkFountainCapability;
 import destiny.penumbra_phantasm.server.datapack.BiomeMusicType;
 import destiny.penumbra_phantasm.server.fountain.DarkFountain;
-import destiny.penumbra_phantasm.server.egg_room.EggRoomUtil;
+import destiny.penumbra_phantasm.server.egg_room.CardKingdomEggRoomUtil;
 import destiny.penumbra_phantasm.server.registry.CapabilityRegistry;
 import destiny.penumbra_phantasm.server.util.DarkWorldUtil;
 import net.minecraft.client.Minecraft;
@@ -172,7 +172,7 @@ public class MusicManager {
         }
 
         if (desiredSound == null) {
-            if (EggRoomUtil.isEggRoom(level) && (state == State.PLAYING || state == State.FADING_IN)) {
+            if (CardKingdomEggRoomUtil.isEggRoom(level) && (state == State.PLAYING || state == State.FADING_IN)) {
                 tickFade();
                 return;
             }

@@ -5,11 +5,14 @@ import destiny.penumbra_phantasm.client.render.RenderBlitUtil;
 import destiny.penumbra_phantasm.client.render.menu.UmbrastoneFurnaceMenu;
 import destiny.penumbra_phantasm.client.render.screen.component.DarkWorldRecipeBookComponent;
 import destiny.penumbra_phantasm.client.render.screen.component.DarkWorldSmeltingRecipeBookComponent;
+import destiny.penumbra_phantasm.server.util.DarkWorldUtil;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.ImageButton;
 import net.minecraft.client.gui.screens.inventory.AbstractFurnaceScreen;
 import net.minecraft.client.gui.screens.recipebook.RecipeBookComponent;
 import net.minecraft.client.gui.screens.recipebook.SmeltingRecipeBookComponent;
+import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
@@ -91,6 +94,12 @@ public class UmbrastoneFurnaceScreen extends AbstractDarkWorldFurnaceScreen<Umbr
     protected void renderBg(GuiGraphics pGuiGraphics, float pPartialTick, int pMouseX, int pMouseY) {
         float t = (float) this.glowTicker / (float) GLOW_TICKER_UPPER_BOUND;
         float glow = Mth.sin(t * Mth.PI);
+
+        LocalPlayer player = Minecraft.getInstance().player;
+
+        if (player != null && DarkWorldUtil.isDepths(player.level())) {
+            glow = 0;
+        }
 
         pGuiGraphics.blit(TEXTURE, this.leftPos - 6, this.topPos - 6, 0, 0, this.imageWidth, this.imageHeight);
         RenderBlitUtil.blitGui(pGuiGraphics, TEXTURE_GLOW, this.leftPos - 6, this.topPos - 6, 0, 0, this.imageWidth, this.imageHeight, glow, glow, glow, 1);

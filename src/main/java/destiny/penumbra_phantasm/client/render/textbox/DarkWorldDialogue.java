@@ -1,7 +1,7 @@
 package destiny.penumbra_phantasm.client.render.textbox;
 
 import destiny.penumbra_phantasm.client.KeyBindings;
-import destiny.penumbra_phantasm.server.network.ServerBoundTextBoxPacket;
+import destiny.penumbra_phantasm.server.network.ServerBoundTextBoxChoicePacket;
 import destiny.penumbra_phantasm.server.registry.PacketHandlerRegistry;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.Input;
@@ -37,7 +37,9 @@ public final class DarkWorldDialogue {
 		if (!isActive()) {
 			return;
 		}
+
 		writer.tick();
+
 		if (writer.isClosed()) {
 			writer = null;
 		}
@@ -47,16 +49,20 @@ public final class DarkWorldDialogue {
 		if (!isActive()) {
 			return;
 		}
+
 		if (writer.selectChoice()) {
 			boolean yes = writer.choiceIndex() == 0;
 			String id = writer.scriptId();
 			writer.close();
 			writer = null;
-			PacketHandlerRegistry.INSTANCE.sendToServer(new ServerBoundTextBoxPacket(id, yes));
+			PacketHandlerRegistry.INSTANCE.sendToServer(new ServerBoundTextBoxChoicePacket(id, yes));
 			return;
 		}
+
 		writer.confirm();
+
 		if (writer.isClosed()) {
+			writer.runOnTextBoxClose();
 			writer = null;
 		}
 	}
@@ -65,6 +71,7 @@ public final class DarkWorldDialogue {
 		if (!isActive()) {
 			return;
 		}
+
 		writer.cancel();
 	}
 
@@ -72,12 +79,15 @@ public final class DarkWorldDialogue {
 		if (!isActive() || writer == null || !writer.isChoosing()) {
 			return;
 		}
+
 		if (input.left) {
 			writer.cycleChoice(-1);
 		}
+
 		if (input.right) {
 			writer.cycleChoice(1);
 		}
+
 		input.left = false;
 		input.right = false;
 		input.leftImpulse = 0f;
@@ -87,12 +97,14 @@ public final class DarkWorldDialogue {
 		if (!isActive()) {
 			return false;
 		}
+
 		if (key == GLFW.GLFW_KEY_ESCAPE) {
 			if (action == GLFW.GLFW_PRESS) {
 				stop();
 			}
 			return false;
 		}
+
 		if (writer != null && writer.isChoosing() && isChoiceMoveKey(key)) {
 			if (action == GLFW.GLFW_PRESS) {
 				if (isChoiceLeftKey(key)) {
@@ -103,17 +115,21 @@ public final class DarkWorldDialogue {
 			}
 			return true;
 		}
+
 		if (action != GLFW.GLFW_PRESS) {
 			return KeyBindings.isDialogueKey(key);
 		}
+
 		if (KeyBindings.isConfirmKey(key)) {
 			onConfirm();
 			return true;
 		}
+
 		if (KeyBindings.isCancelKey(key)) {
 			onCancel();
 			return true;
 		}
+
 		return KeyBindings.isDialogueKey(key);
 	}
 
@@ -125,16 +141,16 @@ public final class DarkWorldDialogue {
 		if (key == GLFW.GLFW_KEY_LEFT) {
 			return true;
 		}
-		return Minecraft.getInstance().options != null
-				&& Minecraft.getInstance().options.keyLeft.getKey().getValue() == key;
+
+		return Minecraft.getInstance().options.keyLeft.getKey().getValue() == key;
 	}
 
 	private static boolean isChoiceRightKey(int key) {
 		if (key == GLFW.GLFW_KEY_RIGHT) {
 			return true;
 		}
-		return Minecraft.getInstance().options != null
-				&& Minecraft.getInstance().options.keyRight.getKey().getValue() == key;
+
+		return Minecraft.getInstance().options.keyRight.getKey().getValue() == key;
 	}
 
 	public static boolean shouldHideHud() {
@@ -142,9 +158,10 @@ public final class DarkWorldDialogue {
 	}
 
 	public static boolean shouldBlockSneak() {
-		if (!isActive() || Minecraft.getInstance().options == null) {
+		if (!isActive()) {
 			return false;
 		}
+
 		return KeyBindings.isCancelKey(Minecraft.getInstance().options.keyShift.getKey().getValue())
 				|| (KeyBindings.CANCEL_ALT != null && KeyBindings.CANCEL_ALT.getKey().getValue() == Minecraft.getInstance().options.keyShift.getKey().getValue())
 				|| (KeyBindings.CANCEL != null && KeyBindings.CANCEL.getKey().getValue() == Minecraft.getInstance().options.keyShift.getKey().getValue());

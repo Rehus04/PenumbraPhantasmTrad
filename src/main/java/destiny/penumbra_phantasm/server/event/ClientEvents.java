@@ -18,8 +18,9 @@ import destiny.penumbra_phantasm.client.render.screen.IntroScreen;
 import destiny.penumbra_phantasm.client.KeyBindings;
 import destiny.penumbra_phantasm.client.render.textbox.DarkWorldDialogue;
 import destiny.penumbra_phantasm.server.capability.SoulCapability;
-import destiny.penumbra_phantasm.server.egg_room.EggRoomUtil;
+import destiny.penumbra_phantasm.server.egg_room.CardKingdomEggRoomUtil;
 import destiny.penumbra_phantasm.server.fountain.GreatDoor;
+import destiny.penumbra_phantasm.server.network.ServerBoundEggRoomInteractPacket;
 import destiny.penumbra_phantasm.server.util.DarkWorldUtil;
 import net.minecraft.Util;
 import net.minecraft.client.AttackIndicatorStatus;
@@ -59,7 +60,7 @@ import destiny.penumbra_phantasm.client.render.fountain.DepthsFountainSwirls;
 import destiny.penumbra_phantasm.client.sound.MusicManager;
 import destiny.penumbra_phantasm.server.fountain.DarkFountain;
 import destiny.penumbra_phantasm.server.capability.DarkFountainCapability;
-import destiny.penumbra_phantasm.server.network.ServerBoundTextBoxPacket;
+import destiny.penumbra_phantasm.server.network.ServerBoundTextBoxChoicePacket;
 import destiny.penumbra_phantasm.server.registry.CapabilityRegistry;
 import destiny.penumbra_phantasm.server.registry.PacketHandlerRegistry;
 import net.minecraft.client.Camera;
@@ -111,14 +112,14 @@ public class ClientEvents {
 	@SubscribeEvent(priority = EventPriority.LOWEST)
 	public static void eggRoomCameraAngles(ViewportEvent.ComputeCameraAngles event) {
 		LocalPlayer player = Minecraft.getInstance().player;
-		if (player == null || !EggRoomUtil.isEggRoom(player.level())) {
+		if (player == null || !CardKingdomEggRoomUtil.isEggRoom(player.level())) {
 			return;
 		}
 		float partialTick = (float) event.getPartialTick();
 		double targetX = Mth.lerp(partialTick, player.xo, player.getX());
 		double targetY = Mth.lerp(partialTick, player.yo, player.getY()) + player.getEyeHeight();
 		double targetZ = Mth.lerp(partialTick, player.zo, player.getZ());
-		Vec2 look = EggRoomUtil.cameraLook(EggRoomUtil.CAMERA_X, EggRoomUtil.CAMERA_Y, EggRoomUtil.CAMERA_Z, targetX, targetY, targetZ);
+		Vec2 look = CardKingdomEggRoomUtil.cameraLook(CardKingdomEggRoomUtil.CAMERA_X, CardKingdomEggRoomUtil.CAMERA_Y, CardKingdomEggRoomUtil.CAMERA_Z, targetX, targetY, targetZ);
 		event.setYaw(look.x);
 		event.setPitch(look.y);
 		event.setRoll(0f);
@@ -285,7 +286,7 @@ public class ClientEvents {
 		if (!event.getLevel().isClientSide()) {
 			return;
 		}
-		if (!(event.getLevel() instanceof ClientLevel level) || !EggRoomUtil.isEggRoom(level)) {
+		if (!(event.getLevel() instanceof ClientLevel level) || !CardKingdomEggRoomUtil.isEggRoom(level)) {
 			return;
 		}
 		Minecraft minecraft = Minecraft.getInstance();
@@ -303,12 +304,15 @@ public class ClientEvents {
 			IntroScreen.tickWorldThumbnail(Minecraft.getInstance());
 			MusicManager.getInstance().tick();
 			Minecraft minecraft = Minecraft.getInstance();
+
 			if (EggRoomCoverScreen.isCovering() && minecraft.screen instanceof ReceivingLevelScreen) {
 				Screen cover = EggRoomCoverScreen.replaceLoadingScreen();
+
 				if (cover != null) {
 					minecraft.setScreen(cover);
 				}
 			}
+
 			LocalPlayer player = minecraft.player;
 			ClientLevel level = minecraft.level;
 			if (player == null || level == null) {
@@ -316,46 +320,61 @@ public class ClientEvents {
 				lastClientDim = null;
 				return;
 			}
+
 			if (lastClientDim == null || !lastClientDim.equals(level.dimension())) {
 				if (lastClientDim != null) {
 					DarkWorldDialogue.stop();
 				}
+
 				lastClientDim = level.dimension();
-				eggRoomRebuildLeft = EggRoomUtil.isEggRoom(level) ? 20 : 0;
+				eggRoomRebuildLeft = CardKingdomEggRoomUtil.isEggRoom(level) ? 20 : 0;
+
 				if (eggRoomRebuildLeft > 0) {
 					Minecraft.getInstance().levelRenderer.allChanged();
 				}
 			}
+
+			//Tick current dialogue
 			DarkWorldDialogue.tick();
-			if (EggRoomUtil.isEggRoom(level)) {
+
+			//Rebuild egg room chunks to not have unloaded chunks
+			if (CardKingdomEggRoomUtil.isEggRoom(level)) {
 				player.setXRot(0f);
 				player.xRotO = 0f;
 				player.setSprinting(false);
 				player.fallDistance = 0f;
+
 				if (eggRoomRebuildLeft > 0) {
 					eggRoomRebuildLeft--;
+
 					if (eggRoomRebuildLeft == 15 || eggRoomRebuildLeft == 10 || eggRoomRebuildLeft == 5 || eggRoomRebuildLeft == 0) {
 						Minecraft.getInstance().levelRenderer.allChanged();
 					}
 				}
 			}
 
+			//Stop swirls from swirling if paused
 			if (!Minecraft.getInstance().isPaused()) {
 				level.getCapability(CapabilityRegistry.DARK_FOUNTAIN).ifPresent(cap -> {
 					cap.darkFountains.forEach((pos, fountain) -> fountain.clientTickOpening());
+
 					if (DarkWorldUtil.isDepths(level)) {
 						DepthsFountainSwirls.tick(level, cap);
 					}
 				});
 			}
 
+			//Stop vanilla music in dark worlds
 			if (DarkWorldUtil.isDarkWorld(level)) {
 				Minecraft.getInstance().getMusicManager().stopPlaying();
 			}
+
+			//Cancel if in the depths
 			if (DarkWorldUtil.isDepths(level)) {
 				return;
 			}
 
+			//DW fountain hue and alpha beyond this point
 			DarkFountainCapability cap;
 			LazyOptional<DarkFountainCapability> lazyCapability = level.getCapability(CapabilityRegistry.DARK_FOUNTAIN);
 			if (lazyCapability.isPresent() && lazyCapability.resolve().isPresent())
@@ -404,16 +423,20 @@ public class ClientEvents {
 			}
 			return;
 		}
+
 		Minecraft minecraft = Minecraft.getInstance();
-		if (event.getAction() == InputConstants.PRESS && KeyBindings.isConfirmKey(event.getKey())
-				&& minecraft.screen == null && minecraft.player != null
-				&& EggRoomUtil.isEggRoom(minecraft.player.level())) {
-			PacketHandlerRegistry.INSTANCE.sendToServer(new ServerBoundTextBoxPacket(ServerBoundTextBoxPacket.INTERACT, false));
+
+		if (event.getAction() == InputConstants.PRESS && KeyBindings.isConfirmKey(event.getKey()) && minecraft.screen == null && minecraft.player != null
+				&& CardKingdomEggRoomUtil.isEggRoom(minecraft.player.level())) {
+
+			PacketHandlerRegistry.INSTANCE.sendToServer(new ServerBoundEggRoomInteractPacket());
+
 			if (event.isCancelable()) {
 				event.setCanceled(true);
 			}
 			return;
 		}
+
 		if (minecraft.screen instanceof IntroScreen introScreen) {
 			if (event.getAction() != 1 || !introScreen.isChoosing)
 				return;
@@ -452,7 +475,7 @@ public class ClientEvents {
 		if (DarkWorldDialogue.shouldBlockSneak()) {
 			event.getInput().shiftKeyDown = false;
 		}
-		if (!(event.getEntity() instanceof LocalPlayer player) || !EggRoomUtil.isEggRoom(player.level())) {
+		if (!(event.getEntity() instanceof LocalPlayer player) || !CardKingdomEggRoomUtil.isEggRoom(player.level())) {
 			return;
 		}
 		player.setXRot(0f);
@@ -461,16 +484,16 @@ public class ClientEvents {
 			return;
 		}
 		Input input = event.getInput();
-		Vec2 away = EggRoomUtil.cameraAwayFlat(player.getX(), player.getZ());
-		Vec2 wish = EggRoomUtil.worldWish(away, input.forwardImpulse, input.leftImpulse);
+		Vec2 away = CardKingdomEggRoomUtil.cameraAwayFlat(player.getX(), player.getZ());
+		Vec2 wish = CardKingdomEggRoomUtil.worldWish(away, input.forwardImpulse, input.leftImpulse);
 		if (wish.x * wish.x + wish.y * wish.y > 1.0E-6f) {
-			float targetYaw = EggRoomUtil.yawFromWish(wish.x, wish.y);
-			float yaw = Mth.rotLerp(EggRoomUtil.LOOK_SMOOTH, player.getYRot(), targetYaw);
+			float targetYaw = CardKingdomEggRoomUtil.yawFromWish(wish.x, wish.y);
+			float yaw = Mth.rotLerp(CardKingdomEggRoomUtil.LOOK_SMOOTH, player.getYRot(), targetYaw);
 			player.setYRot(yaw);
 			player.setYHeadRot(yaw);
 			player.yBodyRot = yaw;
 		}
-		Vec2 local = EggRoomUtil.worldToLocal(wish, player.getYRot());
+		Vec2 local = CardKingdomEggRoomUtil.worldToLocal(wish, player.getYRot());
 		input.leftImpulse = local.x;
 		input.forwardImpulse = local.y;
 	}
@@ -599,6 +622,11 @@ public class ClientEvents {
 		long elapsed = mc.level.getGameTime() % period;
 		float t = (float) elapsed / period;
 		float glow = Mth.sin(t * Mth.PI);
+
+		if (DarkWorldUtil.isDepths(player.level())) {
+			glow = 0;
+		}
+
 		HumanoidArm humanoidarm = player.getMainArm().getOpposite();
 
 		RenderSystem.enableBlend();

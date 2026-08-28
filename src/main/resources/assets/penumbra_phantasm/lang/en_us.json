@@ -357,9 +357,14 @@
   "block.penumbra_phantasm.scarlet_log_mysterious_door": "Mysterious Door",
   "block.penumbra_phantasm.unbreakable_darkness": "Darkness",
 
+  "liquid.penumbra_phantasm.pure_darkness": "Pure Darkness",
+  "liquid.penumbra_phantasm.luminescent_water": "Luminescent Water",
+
   "itemGroup.penumbra_phantasm.main": "PENUMBRA PHANTASM",
   "itemGroup.penumbra_phantasm.card_kingdom": "CARD KINGDOM",
   "itemGroup.penumbra_phantasm.the_depths": "THE DEPTHS",
+
+  "entity.penumbra_phantasm.sealing_soul": "SOUL",
 
   "advancement.penumbra_phantasm.soul_hearth.title": "YOUR Power",
   "advancement.penumbra_phantasm.soul_hearth.description": "Awaken a SOUL Hearth",
@@ -474,14 +479,9 @@
   "message.penumbra_phantasm.making_fountain_room_has_active_fountain": "A fountain is already in this room",
   "message.penumbra_phantasm.making_fountain_depths_conflict": "A fountain on this position already stirs somewhere else...",
   "message.penumbra_phantasm.making_fountain_critical_error": "Couldn't make a fountain due to an error, please reach out to the developer!",
-  "message.penumbra_phantasm.pushed_away_by_fountain": "The flow of darkness pushes you away...",
+
   "message.penumbra_phantasm.hearth_wrong_biome": "The surroundings aren't fitting... (Must be in Soul Sand Valley)",
   "message.penumbra_phantasm.hearth_no_campfire": "The Hearth doesn't have enough heat. (Must be placed on a soul campfire)",
-  "message.penumbra_phantasm.soul_hearth_reject": "The SOUL within rejects you.",
-  "message.penumbra_phantasm.sealing_fountain_no_fountain_nearby": "But there was no fountain nearby...",
-  "message.penumbra_phantasm.sealing_fountain_not_enough_determination": "But you weren't DETERMINED enough...",
-  "message.penumbra_phantasm.sealing_fountain_already_being_sealed": "But the fountain was already being sealed...",
-  "message.penumbra_phantasm.sealing_fountain_depths": "But your SOUL could not shine through the dark...",
   "message.penumbra_phantasm.dark_world_without_fountain": "The dark world you were in didn't have an active fountain",
   "message.penumbra_phantasm.great_door_cant_open_no_light_door": "But the door wouldn't budge... (No unclaimed doors in the fountain rooms)",
   "message.penumbra_phantasm.great_door_cant_open_no_fountain": "But the door wouldn't budge... (This dark world doesn't have a fountain)",
@@ -558,12 +558,24 @@
   "key.penumbra_phantasm.cancel": "Cancel",
   "key.penumbra_phantasm.cancel_alt": "Cancel (Alt)",
 
-  "textbox.penumbra_phantasm.egg.he_is_behind": "(He is behind the tree.)",
-  "textbox.penumbra_phantasm.egg.it_is_a_tree": "(It is a tree.)",
-  "textbox.penumbra_phantasm.egg.man_here": "(Well, there is a man here.)",
-  "textbox.penumbra_phantasm.egg.offered": "(He offered you something.)",
-  "textbox.penumbra_phantasm.egg.no_man": "(Well, there is not a man here.)",
-  "textbox.penumbra_phantasm.egg.received": "(You received an Egg.)",
-  "textbox.penumbra_phantasm.egg.neednt": "(Then he needn't be here.)",
-  "textbox.penumbra_phantasm.egg.used": "(You used the Egg.)"
+  "textbox.penumbra_phantasm.soul_hearth.reject": "The SOUL within rejects you.",
+  "textbox.penumbra_phantasm.soul_hearth.sealing_fountain.depths": "But your SOUL could not shine through the dark...",
+  "textbox.penumbra_phantasm.soul_hearth.sealing_fountain.not_enough_determination": "But you weren't DETERMINED enough...",
+  "textbox.penumbra_phantasm.soul_hearth.sealing_fountain.already_being_sealed": "But the fountain was already being sealed...",
+  "textbox.penumbra_phantasm.soul_hearth.sealing_fountain": "The geyser that gives this land form.",
+  "textbox.penumbra_phantasm.soul_hearth.sealing_fountain.choice": "Seal the DARK FOUNTAIN?",
+  "textbox.penumbra_phantasm.soul_hearth.sealing_fountain.choice.deny": "And so, the darkness kept on flowing...",
+  "textbox.penumbra_phantasm.soul_hearth.sealing_fountain.choice.confirm": "(It was as if your very SOUL was glowing.)",
+
+  "textbox.penumbra_phantasm.dark_fountain.push_away": "The flow of darkness pushes you away...",
+
+  "textbox.penumbra_phantasm.card_kingdom_egg_room.tree_front": "(He is behind the tree.)",
+  "textbox.penumbra_phantasm.card_kingdom_egg_room.tree_front.gone": "(It is a tree.)",
+  "textbox.penumbra_phantasm.card_kingdom_egg_room.tree_behind.1": "(Well, there is a man here.)",
+  "textbox.penumbra_phantasm.card_kingdom_egg_room.tree_behind.2": "(He offered you something.)",
+  "textbox.penumbra_phantasm.card_kingdom_egg_room.tree_behind.gone": "(Well, there is not a man here.)",
+  "textbox.penumbra_phantasm.card_kingdom_egg_room.choice_deny": "(Then he needn't be here.)",
+  "textbox.penumbra_phantasm.egg_room.received_egg": "(You received an Egg.)",
+
+  "textbox.penumbra_phantasm.use.egg": "(You used the Egg.)"
 }

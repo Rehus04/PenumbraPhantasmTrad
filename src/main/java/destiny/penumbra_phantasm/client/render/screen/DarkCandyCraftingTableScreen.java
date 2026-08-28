@@ -4,11 +4,14 @@ import destiny.penumbra_phantasm.PenumbraPhantasm;
 import destiny.penumbra_phantasm.client.render.RenderBlitUtil;
 import destiny.penumbra_phantasm.client.render.menu.DarkCandyCraftingTableMenu;
 import destiny.penumbra_phantasm.client.render.screen.component.DarkWorldRecipeBookComponent;
+import destiny.penumbra_phantasm.server.util.DarkWorldUtil;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.ImageButton;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.gui.screens.recipebook.RecipeBookComponent;
 import net.minecraft.client.gui.screens.recipebook.RecipeUpdateListener;
+import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
@@ -102,6 +105,12 @@ public class DarkCandyCraftingTableScreen extends AbstractContainerScreen<DarkCa
     protected void renderBg(GuiGraphics pGuiGraphics, float pPartialTick, int pMouseX, int pMouseY) {
         float t = (float) this.glowTicker / (float) GLOW_TICKER_UPPER_BOUND;
         float glow = Mth.sin(t * Mth.PI);
+
+        LocalPlayer player = Minecraft.getInstance().player;
+
+        if (player != null && DarkWorldUtil.isDepths(player.level())) {
+            glow = 0;
+        }
 
         int x = this.leftPos - 4;
         int y = this.topPos - 4;

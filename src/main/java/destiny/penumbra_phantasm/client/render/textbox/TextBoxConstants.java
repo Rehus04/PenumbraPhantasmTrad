@@ -3,7 +3,7 @@ package destiny.penumbra_phantasm.client.render.textbox;
 import destiny.penumbra_phantasm.PenumbraPhantasm;
 import net.minecraft.resources.ResourceLocation;
 
-public final class TextBoxMetrics {
+public final class TextBoxConstants {
 	public static final ResourceLocation TEXTURE = new ResourceLocation(PenumbraPhantasm.MODID, "textures/gui/dark_world/text_box.png");
 	public static final ResourceLocation FONT = new ResourceLocation(PenumbraPhantasm.MODID, "8_bit_operator");
 
@@ -14,7 +14,7 @@ public final class TextBoxMetrics {
 	public static final int JEWEL_SIZE = 16;
 	public static final int GLOW_PERIOD_MS = 5000;
 
-	public static final int CHARLINE = 33;
+	public static final int CHARLINE = 50;
 	public static final int MAX_LINES = 3;
 	public static final int HSPACE = 6;
 	public static final int VSPACE = 18;
@@ -26,9 +26,8 @@ public final class TextBoxMetrics {
 
 	public static final float CHARS_PER_TICK = 1.5f;
 	public static final float CHARS_PER_TICK_FAST = 2.5f;
-	public static final float WAIT_AFTER_WELL = 12f;
 	public static final int CHOICE_BLIPS = 3;
 
-	private TextBoxMetrics() {
+	private TextBoxConstants() {
 	}
 }
