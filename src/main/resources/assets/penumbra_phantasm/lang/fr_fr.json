@@ -351,7 +351,7 @@
   "block.penumbra_phantasm.ivory_brick_button": "Bouton en ivoire taillé",
   "block.penumbra_phantasm.ivory_brick_pressure_plate": "Plaque de pression en ivoire taillé",
 
-  "block.penumbra_phantasm.scarlet_log_mysterious_door": "Porte Mysterieuse",
+  "block.penumbra_phantasm.scarlet_log_mysterious_door": "Porte Mystérieuse",
   "block.penumbra_phantasm.unbreakable_darkness": "Ténèbres",
 
   "itemGroup.penumbra_phantasm.main": "PENUMBRA PHANTASM",
@@ -375,7 +375,7 @@
   "advancement.penumbra_phantasm.card_kingdom_visit.title": "Carré d'as",
   "advancement.penumbra_phantasm.card_kingdom_visit.description": "Visitez le royaume des cartes",
   "advancement.penumbra_phantasm.egg_room_card_kingdom.title": "Il est derrière l'arbre",
-  "advancement.penumbra_phantasm.egg_room_card_kingdom.description": "Trouvez une Salle d'Oeuf",
+  "advancement.penumbra_phantasm.egg_room_card_kingdom.description": "Trouvez une salle d'œuf",
   "advancement.penumbra_phantasm.scarlet_tree.title": "Derrière l'arbre",
   "advancement.penumbra_phantasm.scarlet_tree.description": "Trouvez un arbre écarlate",
   "advancement.penumbra_phantasm.dark_candy.title": "D'une douceur qui fond en bouche",
@@ -408,12 +408,12 @@
   "sound.penumbra_phantasm.fountain_wind": "Les ténèbres se déversent de la fontaine",
   "sound.penumbra_phantasm.fountain_music": "Twilight reverie at the shadow's edge",
   "sound.penumbra_phantasm.fountain_music_alternate": "Twilight reverie at the shadow's edge",
-  "sound.penumbra_phantasm.fountain_darkness": "Le sol fissuré crache des ténèbres",
+  "sound.penumbra_phantasm.fountain_darkness": "Le sol fendu répand les ténèbres",
   "sound.penumbra_phantasm.fountain_seal": "La lumière surpasse les ténèbres",
   "sound.penumbra_phantasm.real_knife_slash": "La determination fend l'air",
-  "sound.penumbra_phantasm.real_knife_hit": "Dégats importants",
+  "sound.penumbra_phantasm.real_knife_hit": "Dégâts importants",
   "sound.penumbra_phantasm.level_up": "Votre LOVE augmente",
-  "sound.penumbra_phantasm.great_shine": "L'ÂME apparait",
+  "sound.penumbra_phantasm.great_shine": "L'ÂME apparaît",
   "sound.penumbra_phantasm.soul_break": "L'ÂME se brise en deux",
   "sound.penumbra_phantasm.soul_shatter": "L'ÂME se brise en morceaux",
   "sound.penumbra_phantasm.dark_world_fall": "Chute dans les ténèbres",
@@ -459,7 +459,7 @@
   "biome.penumbra_phantasm.challenger_dark": "Ombres des Mariannes",
   "biome.penumbra_phantasm.challenger_dark.description": "'Un domaine des plus sombres acrimonies, se déguisant de fantaisie'",
 
-  "biome.penumbra_phantasm.egg_room_card_kingdom": "Salle d'Oeuf"",
+  "biome.penumbra_phantasm.egg_room_card_kingdom": "Salle d'œuf",
 
   "message.penumbra_phantasm.making_fountain_no_soul_hearth": "Pas de foyez d'ÂME...",
   "message.penumbra_phantasm.making_fountain_not_enough_determination": "Pas assez de DÉTERMINATION pour transpercer...",
