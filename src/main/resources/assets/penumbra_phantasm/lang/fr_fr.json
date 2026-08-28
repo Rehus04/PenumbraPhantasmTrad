@@ -490,7 +490,7 @@
   "message.penumbra_phantasm.fire_door_limit_reached": "Impossible de sauvegarder une porte de feu supplémentaire dans ce monde d'ombre...",
   "message.penumbra_phantasm.fire_door_not_enough_doors": "Nulle part où se téléporter...",
   "message.penumbra_phantasm.fire_door_not_in_dark_world": "Mais la poignée ne voulait pas tourner... (Pas dans un monde d'ombre)",
-  "message.penumbra_phantasm.fire_door_depths": "Mais la poignée ne voulait pas tourner... (Cannot use in the depths)",
+  "message.penumbra_phantasm.fire_door_depths": "Mais la poignée ne voulait pas tourner... (Pas dans les tréfonds)",
   
   "death.attack.penumbra_phantasm.injection_prick": "%1$s n'a pas pu survivre à l'injection",
   "death.attack.penumbra_phantasm.injection_prick.player": "%1$s est mort(e) suite à une injection administrée par %2$s",
