@@ -13,7 +13,6 @@ import destiny.penumbra_phantasm.server.util.ModUtil;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.*;
-import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ClientboundSetEntityMotionPacket;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
@@ -1150,7 +1149,7 @@ public class DarkFountain {
             return;
         }
 
-        BlockPos pos = resolveDepthsFountainPos(depths, new Vec2(this.fountainPos.getX(), this.fountainPos.getZ()));
+        BlockPos pos = getHeightmappedDepthsPos(depths, new Vec2(scaledDepthsX(fountainPos.getX()), scaledDepthsZ(fountainPos.getZ())));
         depths.getCapability(CapabilityRegistry.DARK_FOUNTAIN).ifPresent(cap -> {
             cap.addDarkFountain(pos, depths.dimension(), this.fountainPos, darkLevel.dimension(),
                     -1, 0, 0, 0, new HashSet<>(), new ArrayList<>(), -1, -1, 0);
@@ -1180,12 +1179,11 @@ public class DarkFountain {
     }
 
     public static boolean isDepthsXzOccupied(MinecraftServer server, Vec2 depthsPos) {
-        Vec2 scaledPos = new Vec2(DarkFountain.scaledDepthsX((int) depthsPos.x), DarkFountain.scaledDepthsZ((int) depthsPos.y));
         ServerLevel depths = DarkWorldUtil.getDepths(server);
         if (depths == null) {
             return false;
         }
-        return isDepthsXzOccupied(depths, scaledPos);
+        return isDepthsXzOccupied(depths, depthsPos);
     }
 
     public static boolean isDepthsXzOccupied(ServerLevel depths, Vec2 depthsPos) {
@@ -1198,6 +1196,14 @@ public class DarkFountain {
             }
             return false;
         }).orElse(false);
+    }
+
+    public static Vec2 getBumpedDepthsXZ(MinecraftServer server, Vec2 originPos) {
+        ServerLevel depths = DarkWorldUtil.getDepths(server);
+        if (depths == null) {
+            return originPos;
+        }
+        return getBumpedDepthsXZ(depths, originPos);
     }
 
     public static Vec2 getBumpedDepthsXZ(ServerLevel depths, Vec2 originPos) {
@@ -1235,13 +1241,13 @@ public class DarkFountain {
         return originPos.add(combinedAwayVec.normalized().scale(32));
     }
 
-    public static BlockPos resolveDepthsFountainPos(ServerLevel depths, Vec2 originXZ) {
-        BlockPos scaled = new BlockPos(scaledDepthsX((int) originXZ.x), depths.getMinBuildHeight(), scaledDepthsZ((int) originXZ.y));
-        ChunkPos chunkPos = new ChunkPos(scaled);
+    public static BlockPos getHeightmappedDepthsPos(ServerLevel depths, Vec2 originXZ) {
+        BlockPos originPos = new BlockPos((int) originXZ.x, depths.getMinBuildHeight(), (int) originXZ.y);
+        ChunkPos chunkPos = new ChunkPos(originPos);
 
         depths.setChunkForced(chunkPos.x, chunkPos.z, true);
-        BlockPos heightmap = depths.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, scaled);
-        BlockPos pos = new BlockPos(scaled.getX(), heightmap.getY() + DEPTHS_FOUNTAIN_Y_OFFSET, scaled.getZ());
+        BlockPos heightmap = depths.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, originPos);
+        BlockPos pos = new BlockPos(originPos.getX(), heightmap.getY() + DEPTHS_FOUNTAIN_Y_OFFSET, originPos.getZ());
         depths.setChunkForced(chunkPos.x, chunkPos.z, false);
 
         return pos;
