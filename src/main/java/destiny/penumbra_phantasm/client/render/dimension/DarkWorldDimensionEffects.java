@@ -1,5 +1,9 @@
 package destiny.penumbra_phantasm.client.render.dimension;
 
+import destiny.penumbra_phantasm.client.render.ModShaders;
+import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.client.renderer.*;
+import net.minecraft.world.phys.Vec2;
 import org.joml.Matrix4f;
 
 import com.mojang.blaze3d.systems.RenderSystem;
@@ -14,20 +18,35 @@ import destiny.penumbra_phantasm.PenumbraPhantasm;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.client.renderer.DimensionSpecialEffects;
-import net.minecraft.client.renderer.FogRenderer;
-import net.minecraft.client.renderer.GameRenderer;
-import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec3;
 
+import java.awt.*;
+
 public class DarkWorldDimensionEffects extends DimensionSpecialEffects {
     public static final ResourceLocation DARK_WORLD_DIMENSION_EFFECTS = new ResourceLocation(PenumbraPhantasm.MODID, "dark_world_dimension_effects");
+
+    public static final ResourceLocation IMAGE_DEPTH = new ResourceLocation(PenumbraPhantasm.MODID, "textures/misc/image_depth.png");
+    public static final ResourceLocation WHITE_SCREEN = new ResourceLocation(PenumbraPhantasm.MODID, "textures/misc/white_screen.png");
+
     protected VertexBuffer skyBuffer;
+
     public DarkWorldDimensionEffects() {
         super(OverworldEffects.CLOUD_LEVEL, true, SkyType.NORMAL, false, false);
         this.skyBuffer = createDarkSky();
+    }
+
+    public static VertexBuffer createSkyBuffer(float scale) {
+        VertexBuffer skyBuffer = new VertexBuffer(VertexBuffer.Usage.STATIC);
+        Tesselator tesselator = Tesselator.getInstance();
+        BufferBuilder bufferBuilder = tesselator.getBuilder();
+        BufferBuilder.RenderedBuffer renderedBuffer = DarkWorldDimensionEffects.buildSkyDisc(bufferBuilder, scale);
+        skyBuffer.bind();
+        skyBuffer.upload(renderedBuffer);
+        VertexBuffer.unbind();
+
+        return skyBuffer;
     }
 
     public static VertexBuffer createDarkSky() {
@@ -51,6 +70,68 @@ public class DarkWorldDimensionEffects extends DimensionSpecialEffects {
 
         builder.begin(VertexFormat.Mode.TRIANGLE_FAN, DefaultVertexFormat.POSITION);
         builder.vertex(0, scale, 0).endVertex();
+
+        for(int i = -180; i <= 180; i += 45) {
+            float radians = (float) Math.toRadians(i);
+            builder.vertex(invertibleBaseRadius * Mth.cos(radians), scale, baseRadius * Mth.sin(radians)).endVertex();
+        }
+
+        return builder.end();
+    }
+
+    public static BufferBuilder.RenderedBuffer buildDepthsSkyDisc(BufferBuilder builder, float scale) {
+        float baseRadius = 512F;
+        float invertibleBaseRadius = Math.signum(scale) * baseRadius;
+
+        ClientLevel level = Minecraft.getInstance().level;;
+
+        if (level == null) return null;
+
+        float time = (level.getGameTime()) * 0.1f;
+        float fountainHue = time * 0.03f % 1f;
+
+        Color middleColor = Color.getHSBColor(fountainHue, 1f, 1f);
+        ShaderInstance shaderInstance = ModShaders.FOUNTAIN_MASKED;
+
+        if (shaderInstance != null) {
+            float shadertime = (level.getGameTime()) * 0.05f;
+            shaderInstance.safeGetUniform("Time").set(shadertime);
+            Minecraft mc = Minecraft.getInstance();
+            float aspect = (float) mc.getWindow().getWidth() /
+                    (float) mc.getWindow().getHeight();
+
+            shaderInstance.safeGetUniform("AspectRatio").set(aspect);
+
+        }
+
+        LocalPlayer player = Minecraft.getInstance().player;
+
+        if(player != null) {
+            float middleRed = middleColor.getRed() / 255f;
+            float middleGreen = middleColor.getGreen() / 255f;
+            float middleBlue = middleColor.getBlue() / 255f;
+
+            float tintRed = 1f + (middleRed - 1f);
+            float tintGreen = 1f + (middleGreen - 1f);
+            float tintBlue = 1f + (middleBlue - 1f);
+
+            if (shaderInstance != null) {
+                shaderInstance.safeGetUniform("TintColor").set(
+                        tintRed,
+                        tintGreen,
+                        tintBlue,
+                        1f
+                );
+            }
+        }
+
+        RenderSystem.setShaderTexture(0, WHITE_SCREEN);
+        RenderSystem.setShaderTexture(1, IMAGE_DEPTH);
+
+        RenderSystem.setShaderColor(1f, 1f, 1f, 1f);
+
+        builder.begin(VertexFormat.Mode.TRIANGLE_FAN, DefaultVertexFormat.POSITION_COLOR_TEX);
+        builder.vertex(0, scale, 0).color(255, 255, 255, 255).uv(0.5f, 0.5f).endVertex();
 
         for(int i = -180; i <= 180; i += 45) {
             float radians = (float) Math.toRadians(i);

@@ -37,7 +37,7 @@ public class CardKingdomDimensionEffects extends DarkWorldDimensionEffects {
     };
 
     private static final int[] STAR_WEIGHTS = new int[]{48, 24, 12, 6, 3};
-    private static final float SKY_DISC_HEIGHT = 16.0F;
+    public static final float SKY_DISC_HEIGHT = 16.0F;
     private static final float STAR_DISTANCE = 96.0F;
     private static final int STATIC_STAR_COUNT = 250;
     private static final int SHOOTING_STAR_PERIOD = 90;
@@ -80,18 +80,6 @@ public class CardKingdomDimensionEffects extends DarkWorldDimensionEffects {
     public static boolean isCardKingdomDarkWorld(ClientLevel level) {
         String path = level.dimension().location().getPath();
         return path.contains("card_kingdom") && !path.contains("egg_room");
-    }
-
-    private static VertexBuffer createSkyBuffer(float scale) {
-        VertexBuffer skyBuffer = new VertexBuffer(VertexBuffer.Usage.STATIC);
-        Tesselator tesselator = Tesselator.getInstance();
-        BufferBuilder bufferBuilder = tesselator.getBuilder();
-        BufferBuilder.RenderedBuffer renderedBuffer = DarkWorldDimensionEffects.buildSkyDisc(bufferBuilder, scale);
-        skyBuffer.bind();
-        skyBuffer.upload(renderedBuffer);
-        VertexBuffer.unbind();
-
-        return skyBuffer;
     }
 
     @Override

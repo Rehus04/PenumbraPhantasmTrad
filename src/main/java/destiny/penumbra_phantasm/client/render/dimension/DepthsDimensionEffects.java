@@ -8,6 +8,7 @@ import com.mojang.blaze3d.vertex.Tesselator;
 import com.mojang.blaze3d.vertex.VertexBuffer;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import destiny.penumbra_phantasm.PenumbraPhantasm;
+import destiny.penumbra_phantasm.client.render.ModShaders;
 import net.minecraft.client.Camera;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.DimensionSpecialEffects;
@@ -22,6 +23,8 @@ import org.joml.Matrix4f;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import static destiny.penumbra_phantasm.client.render.dimension.CardKingdomDimensionEffects.SKY_DISC_HEIGHT;
 
 public class DepthsDimensionEffects extends DimensionSpecialEffects {
     public static final ResourceLocation DEPTHS_DIMENSION_EFFECTS = new ResourceLocation(PenumbraPhantasm.MODID, "depths_dimension_effects");
@@ -52,6 +55,7 @@ public class DepthsDimensionEffects extends DimensionSpecialEffects {
     private static final float CYLINDER_RADIUS = 96F;
 
     private final VertexBuffer skyBuffer;
+    private final VertexBuffer lowerSkyBuffer;
     private final VertexBuffer dynamicTexturedBuffer;
     private final VertexBuffer dynamicColorBuffer;
 
@@ -60,13 +64,16 @@ public class DepthsDimensionEffects extends DimensionSpecialEffects {
 
     public DepthsDimensionEffects() {
         super(Float.NaN, true, SkyType.NONE, false, false);
-        this.skyBuffer = DarkWorldDimensionEffects.createDarkSky();
+        this.skyBuffer = createDepthsSkyBuffer(SKY_DISC_HEIGHT);
+        this.lowerSkyBuffer = createDepthsSkyBuffer(-SKY_DISC_HEIGHT);
         this.dynamicTexturedBuffer = new VertexBuffer(VertexBuffer.Usage.STATIC);
         this.dynamicColorBuffer = new VertexBuffer(VertexBuffer.Usage.STATIC);
     }
 
     @Override
     public boolean renderSky(ClientLevel level, int ticks, float partialTick, PoseStack poseStack, Camera camera, Matrix4f projectionMatrix, boolean isFoggy, Runnable setupFog) {
+        if (skyBuffer == null || lowerSkyBuffer == null) return false;
+
         setupFog.run();
         RenderSystem.depthMask(false);
         RenderSystem.disableCull();
@@ -74,7 +81,9 @@ public class DepthsDimensionEffects extends DimensionSpecialEffects {
         RenderSystem.setShader(GameRenderer::getPositionShader);
 
         this.skyBuffer.bind();
-        this.skyBuffer.drawWithShader(poseStack.last().pose(), projectionMatrix, RenderSystem.getShader());
+        this.skyBuffer.drawWithShader(poseStack.last().pose(), projectionMatrix, ModShaders.FOUNTAIN_MASKED);
+        this.lowerSkyBuffer.bind();
+        this.lowerSkyBuffer.drawWithShader(poseStack.last().pose(), projectionMatrix, ModShaders.FOUNTAIN_MASKED);
         VertexBuffer.unbind();
 
         RenderSystem.setShaderColor(1F, 1F, 1F, 1F);
@@ -282,6 +291,21 @@ public class DepthsDimensionEffects extends DimensionSpecialEffects {
         up = towardCamera.cross(right).normalize();
 
         return new Basis(right, up);
+    }
+
+    public static VertexBuffer createDepthsSkyBuffer(float scale) {
+        VertexBuffer skyBuffer = new VertexBuffer(VertexBuffer.Usage.STATIC);
+        Tesselator tesselator = Tesselator.getInstance();
+        BufferBuilder bufferBuilder = tesselator.getBuilder();
+        BufferBuilder.RenderedBuffer renderedBuffer = DarkWorldDimensionEffects.buildDepthsSkyDisc(bufferBuilder, scale);
+
+        if (renderedBuffer == null) return null;
+
+        skyBuffer.bind();
+        skyBuffer.upload(renderedBuffer);
+        VertexBuffer.unbind();
+
+        return skyBuffer;
     }
 
     @Override
