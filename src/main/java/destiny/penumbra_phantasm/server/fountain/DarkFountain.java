@@ -1006,7 +1006,7 @@ public class DarkFountain {
 
                 if (showPushMessage) {
                     PacketHandlerRegistry.INSTANCE.send(PacketDistributor.PLAYER.with(() -> serverPlayer),
-                            new ClientBoundTextBoxPacket(ClientBoundTextBoxPacket.SOUL_HEARTH_SEALING_FOUNTAIN_CHOICE));
+                            new ClientBoundTextBoxPacket(ClientBoundTextBoxPacket.DARK_FOUNTAIN_PUSH_AWAY));
                 }
             }
         }
