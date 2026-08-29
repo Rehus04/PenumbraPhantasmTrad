@@ -1,6 +1,6 @@
 package destiny.penumbra_phantasm.mixin;
 
-import destiny.penumbra_phantasm.server.egg_room.EggRoomUtil;
+import destiny.penumbra_phantasm.server.egg_room.CardKingdomEggRoomUtil;
 import net.minecraft.client.Camera;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
@@ -26,17 +26,17 @@ public abstract class CameraMixin {
 
 	@Inject(method = "setup", at = @At("TAIL"))
 	private void penumbraPhantasm$eggRoomCamera(BlockGetter level, Entity entity, boolean detached, boolean thirdPersonReverse, float partialTick, CallbackInfo ci) {
-		if (!(entity instanceof Player player) || !EggRoomUtil.isEggRoom(player.level())) {
+		if (!(entity instanceof Player player) || !CardKingdomEggRoomUtil.isEggRoom(player.level())) {
 			return;
 		}
 		this.detached = true;
-		double camX = EggRoomUtil.CAMERA_X;
-		double camY = EggRoomUtil.CAMERA_Y;
-		double camZ = EggRoomUtil.CAMERA_Z;
+		double camX = CardKingdomEggRoomUtil.CAMERA_X;
+		double camY = CardKingdomEggRoomUtil.CAMERA_Y;
+		double camZ = CardKingdomEggRoomUtil.CAMERA_Z;
 		double targetX = Mth.lerp(partialTick, player.xo, player.getX());
 		double targetY = Mth.lerp(partialTick, player.yo, player.getY()) + player.getEyeHeight();
 		double targetZ = Mth.lerp(partialTick, player.zo, player.getZ());
-		Vec2 look = EggRoomUtil.cameraLook(camX, camY, camZ, targetX, targetY, targetZ);
+		Vec2 look = CardKingdomEggRoomUtil.cameraLook(camX, camY, camZ, targetX, targetY, targetZ);
 		this.setPosition(camX, camY, camZ);
 		this.setRotation(look.x, look.y);
 	}

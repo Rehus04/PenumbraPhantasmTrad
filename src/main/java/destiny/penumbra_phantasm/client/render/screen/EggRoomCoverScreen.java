@@ -1,7 +1,7 @@
 package destiny.penumbra_phantasm.client.render.screen;
 
 import destiny.penumbra_phantasm.PenumbraPhantasm;
-import destiny.penumbra_phantasm.server.egg_room.EggRoomUtil;
+import destiny.penumbra_phantasm.server.egg_room.CardKingdomEggRoomUtil;
 import destiny.penumbra_phantasm.server.network.ServerBoundEggRoomReadyPacket;
 import destiny.penumbra_phantasm.server.registry.PacketHandlerRegistry;
 import net.minecraft.client.GameNarrator;
@@ -47,8 +47,8 @@ public class EggRoomCoverScreen extends Screen {
 		if (pending && pendingDimension != null) {
 			return new EggRoomCoverScreen(pendingDimension, pendingChunkX, pendingChunkZ);
 		}
-		if (minecraft.player != null && minecraft.player.level() != null && EggRoomUtil.isEggRoom(minecraft.player.level())) {
-			ChunkPos spawn = new ChunkPos(BlockPos.containing(EggRoomUtil.SPAWN_X, EggRoomUtil.SPAWN_Y, EggRoomUtil.SPAWN_Z));
+		if (minecraft.player != null && minecraft.player.level() != null && CardKingdomEggRoomUtil.isEggRoom(minecraft.player.level())) {
+			ChunkPos spawn = new ChunkPos(BlockPos.containing(CardKingdomEggRoomUtil.SPAWN_X, CardKingdomEggRoomUtil.SPAWN_Y, CardKingdomEggRoomUtil.SPAWN_Z));
 			pending = true;
 			pendingDimension = minecraft.player.level().dimension();
 			pendingChunkX = spawn.x;

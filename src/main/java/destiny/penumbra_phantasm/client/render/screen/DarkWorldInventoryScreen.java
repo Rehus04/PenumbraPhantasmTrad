@@ -6,6 +6,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import destiny.penumbra_phantasm.PenumbraPhantasm;
 import destiny.penumbra_phantasm.client.render.RenderBlitUtil;
 import destiny.penumbra_phantasm.client.render.screen.component.DarkWorldRecipeBookComponent;
+import destiny.penumbra_phantasm.server.util.DarkWorldUtil;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
@@ -13,6 +14,7 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.ImageButton;
 import net.minecraft.client.gui.screens.inventory.EffectRenderingInventoryScreen;
 import net.minecraft.client.gui.screens.recipebook.RecipeUpdateListener;
+import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
 import net.minecraft.network.chat.Component;
@@ -140,6 +142,13 @@ public class DarkWorldInventoryScreen extends EffectRenderingInventoryScreen<Dar
     protected void renderBg(GuiGraphics pGuiGraphics, float pPartialTick, int pMouseX, int pMouseY) {
         float t = (float) this.glowTicker / (float) GLOW_TICKER_UPPER_BOUND;
         float glow = Mth.sin(t * Mth.PI);
+
+        LocalPlayer player = Minecraft.getInstance().player;
+
+        if (player != null && DarkWorldUtil.isDepths(player.level())) {
+            glow = 0;
+        }
+
         int i = this.leftPos;
         int j = this.topPos;
         pGuiGraphics.blit(DARK_WORLD_INVENTORY_LOCATION, i, j, 0, 0, this.imageWidth, this.imageHeight);

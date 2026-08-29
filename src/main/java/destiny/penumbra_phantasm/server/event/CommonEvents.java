@@ -5,8 +5,8 @@ import destiny.penumbra_phantasm.client.network.ClientBoundParticlePacket;
 import destiny.penumbra_phantasm.client.network.ClientBoundSoulBreakPacket;
 import destiny.penumbra_phantasm.server.advancement.ChangedDimensionContainsTrigger;
 import destiny.penumbra_phantasm.server.capability.SoulCapability;
-import destiny.penumbra_phantasm.server.egg_room.EggRoomManager;
-import destiny.penumbra_phantasm.server.egg_room.EggRoomUtil;
+import destiny.penumbra_phantasm.server.egg_room.CardKingdomEggRoomManager;
+import destiny.penumbra_phantasm.server.egg_room.CardKingdomEggRoomUtil;
 import destiny.penumbra_phantasm.server.fountain.DarkFountain;
 import destiny.penumbra_phantasm.server.item.FractalMirrorItem;
 import destiny.penumbra_phantasm.server.transformations.inventory.StorageData;
@@ -56,7 +56,7 @@ public class CommonEvents {
         if (!DarkWorldUtil.isDarkWorld(level)) {
             return;
         }
-        if (EggRoomUtil.isEggRoom(level)) {
+        if (CardKingdomEggRoomUtil.isEggRoom(level)) {
             return;
         }
         if (DarkWorldUtil.isDepths(level)) {
@@ -215,7 +215,7 @@ public class CommonEvents {
 
             if (level instanceof ServerLevel serverLevel) {
                 DepthsSkyLightning.tick(serverLevel);
-                EggRoomManager.tickPendingDoors(serverLevel);
+                CardKingdomEggRoomManager.tickPendingDoors(serverLevel);
                 level.getCapability(CapabilityRegistry.GREAT_DOOR).ifPresent(cap -> {
                     for (GreatDoor greatDoor : new ArrayList<>(cap.greatDoors.values())) {
                         ChunkPos doorChunk = new ChunkPos(greatDoor.greatDoorPos);
@@ -299,8 +299,8 @@ public class CommonEvents {
     public void playerChangedDimension(PlayerEvent.PlayerChangedDimensionEvent event) {
         if (event.getEntity() instanceof ServerPlayer serverPlayer) {
             ChangedDimensionContainsTrigger.INSTANCE.trigger(serverPlayer, event.getFrom(), event.getTo());
-            if (EggRoomUtil.isEggRoomKey(event.getTo())) {
-                EggRoomManager.onChangedToEggRoom(serverPlayer);
+            if (CardKingdomEggRoomUtil.isEggRoomKey(event.getTo())) {
+                CardKingdomEggRoomManager.onChangedToEggRoom(serverPlayer);
             }
         }
 
@@ -348,8 +348,8 @@ public class CommonEvents {
     public void playerLoggedIn(PlayerEvent.PlayerLoggedInEvent event) {
         if (event.getEntity() instanceof ServerPlayer serverPlayer) {
             rescuePlayerIfStrandedDarkWorldWithoutFountain(serverPlayer);
-            if (EggRoomUtil.isEggRoom(serverPlayer.level())) {
-                EggRoomManager.onChangedToEggRoom(serverPlayer);
+            if (CardKingdomEggRoomUtil.isEggRoom(serverPlayer.level())) {
+                CardKingdomEggRoomManager.onChangedToEggRoom(serverPlayer);
             }
             if (ServerConfig.skipIntroScreen) {
                 serverPlayer.getCapability(CapabilityRegistry.SOUL).ifPresent(cap -> {
@@ -365,7 +365,7 @@ public class CommonEvents {
     @SubscribeEvent
     public void playerLoggedOut(PlayerEvent.PlayerLoggedOutEvent event) {
         if (event.getEntity() instanceof ServerPlayer serverPlayer) {
-            EggRoomManager.onLoggedOut(serverPlayer.getUUID());
+            CardKingdomEggRoomManager.onLoggedOut(serverPlayer.getUUID());
         }
     }
 
@@ -382,7 +382,7 @@ public class CommonEvents {
             event.player.getCapability(CapabilityRegistry.SOUL).ifPresent(cap -> cap.tick(event.player.level(), player));
             event.player.getCapability(CapabilityRegistry.SCREEN_ANIMATION).ifPresent(cap -> cap.tick(event.player.level(), player));
             rescuePlayerIfStrandedDarkWorldWithoutFountain(player);
-            EggRoomManager.tickPlayer(player);
+            CardKingdomEggRoomManager.tickPlayer(player);
         }
     }
 }

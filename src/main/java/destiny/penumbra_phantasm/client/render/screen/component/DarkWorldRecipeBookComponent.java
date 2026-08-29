@@ -3,6 +3,7 @@ package destiny.penumbra_phantasm.client.render.screen.component;
 import com.google.common.collect.Lists;
 import destiny.penumbra_phantasm.PenumbraPhantasm;
 import destiny.penumbra_phantasm.client.render.RenderBlitUtil;
+import destiny.penumbra_phantasm.server.util.DarkWorldUtil;
 import it.unimi.dsi.fastutil.objects.ObjectLinkedOpenHashSet;
 import it.unimi.dsi.fastutil.objects.ObjectSet;
 import net.minecraft.ChatFormatting;
@@ -19,6 +20,7 @@ import net.minecraft.client.gui.narration.NarratableEntry;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.recipebook.*;
+import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.resources.language.LanguageInfo;
 import net.minecraft.client.resources.language.LanguageManager;
 import net.minecraft.client.searchtree.SearchRegistry;
@@ -270,6 +272,12 @@ public class DarkWorldRecipeBookComponent extends RecipeBookComponent implements
         if (this.isVisible()) {
             float t = (float) this.glowTicker / (float) GLOW_TICKER_UPPER_BOUND;
             float glow = Mth.sin(t * Mth.PI);
+
+            LocalPlayer player = Minecraft.getInstance().player;
+
+            if (player != null && DarkWorldUtil.isDepths(player.level())) {
+                glow = 0;
+            }
 
             pGuiGraphics.pose().pushPose();
             pGuiGraphics.pose().translate(0.0F, 0.0F, 100.0F);

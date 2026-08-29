@@ -1,6 +1,6 @@
 package destiny.penumbra_phantasm.mixin;
 
-import destiny.penumbra_phantasm.server.egg_room.EggRoomUtil;
+import destiny.penumbra_phantasm.server.egg_room.CardKingdomEggRoomUtil;
 import destiny.penumbra_phantasm.server.util.DarkWorldUtil;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.LivingEntity;
@@ -20,7 +20,7 @@ public abstract class LivingEntityMixin {
 			return;
 		}
 		LivingEntity self = (LivingEntity) (Object) this;
-		if (self instanceof Player && EggRoomUtil.isEggRoom(self.level())) {
+		if (self instanceof Player && CardKingdomEggRoomUtil.isEggRoom(self.level())) {
 			ci.cancel();
 		}
 	}

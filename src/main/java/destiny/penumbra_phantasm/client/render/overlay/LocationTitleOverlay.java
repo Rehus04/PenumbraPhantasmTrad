@@ -4,7 +4,7 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import destiny.penumbra_phantasm.PenumbraPhantasm;
 import destiny.penumbra_phantasm.server.capability.ScreenAnimationCapability;
-import destiny.penumbra_phantasm.server.egg_room.EggRoomUtil;
+import destiny.penumbra_phantasm.server.egg_room.CardKingdomEggRoomUtil;
 import destiny.penumbra_phantasm.server.registry.CapabilityRegistry;
 import destiny.penumbra_phantasm.server.registry.SoundRegistry;
 import destiny.penumbra_phantasm.server.util.DarkWorldUtil;
@@ -32,7 +32,7 @@ public class LocationTitleOverlay {
 
         Level level = player.level();
 
-        if (!DarkWorldUtil.isDarkWorld(level) || EggRoomUtil.isEggRoom(level))
+        if (!DarkWorldUtil.isDarkWorld(level) || CardKingdomEggRoomUtil.isEggRoom(level))
             return;
 
         //Getting capability

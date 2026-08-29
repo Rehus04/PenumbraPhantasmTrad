@@ -49,7 +49,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
-public class EggRoomManager {
+public class CardKingdomEggRoomManager {
 	private static final ResourceLocation STRUCTURE_ID = new ResourceLocation(PenumbraPhantasm.MODID, "egg_room_card_kingdom");
 	private static final List<PendingDoor> PENDING_DOORS = new ArrayList<>();
 	private static final Map<UUID, Long> DOOR_LOCK_UNTIL = new HashMap<>();
@@ -77,7 +77,7 @@ public class EggRoomManager {
 
 		StructureTemplate template = templateOpt.get();
 		Vec3i size = template.getSize();
-		BlockPos origin = new BlockPos(-size.getX() / 2, EggRoomUtil.PLACE_Y, -size.getZ() / 2);
+		BlockPos origin = new BlockPos(-size.getX() / 2, CardKingdomEggRoomUtil.PLACE_Y, -size.getZ() / 2);
 		StructurePlaceSettings settings = new StructurePlaceSettings().setRotation(Rotation.NONE).setMirror(Mirror.NONE).setIgnoreEntities(true);
 		forceChunks(eggLevel, origin.getX(), origin.getZ(), origin.getX() + size.getX() - 1, origin.getZ() + size.getZ() - 1);
 		template.placeInWorld(eggLevel, origin, origin, settings, eggLevel.random, 2);
@@ -107,24 +107,26 @@ public class EggRoomManager {
 		data.maxX = origin.getX() + size.getX() - 1;
 		data.maxY = origin.getY() + size.getY() - 1;
 		data.maxZ = origin.getZ() + size.getZ() - 1;
+
 		if (tree != null) {
 			data.treeX = tree.getX();
 			data.treeY = tree.getY();
 			data.treeZ = tree.getZ();
 		}
+
 		data.setDirty();
 		forceRoomChunks(eggLevel, data);
 	}
 
 	public static void enterFromDoor(Player player, Level originLevel, BlockPos doorLower) {
 		if (!(player instanceof ServerPlayer serverPlayer) || originLevel.isClientSide) return;
-		if (EggRoomUtil.isEggRoom(serverPlayer.level())) return;
+		if (CardKingdomEggRoomUtil.isEggRoom(serverPlayer.level())) return;
 		if (isDoorLocked(serverPlayer.getUUID()) || isPendingDoor(originLevel.dimension(), doorLower)) return;
 
 		MinecraftServer server = serverPlayer.getServer();
 		if (server == null) return;
 
-		ServerLevel eggLevel = server.getLevel(EggRoomUtil.CARD_KINGDOM_EGG_ROOM);
+		ServerLevel eggLevel = server.getLevel(CardKingdomEggRoomUtil.CARD_KINGDOM_EGG_ROOM);
 		if (eggLevel == null) return;
 
 		lockDoor(serverPlayer.getUUID(), 8000);
@@ -145,15 +147,18 @@ public class EggRoomManager {
 			cap.eggLeftEntrance = false;
 		});
 
-		Vec3 spawn = EggRoomUtil.spawnPos();
+		Vec3 spawn = CardKingdomEggRoomUtil.spawnPos();
 		eggLevel.getChunk(BlockPos.containing(spawn.x, spawn.y, spawn.z));
-		beginTransit(serverPlayer, eggLevel.dimension(), true, spawn.x, spawn.y, spawn.z, EggRoomUtil.SPAWN_YAW);
-		serverPlayer.teleportTo(eggLevel, spawn.x, spawn.y, spawn.z, EggRoomUtil.SPAWN_YAW, 0f);
+
+		beginTransit(serverPlayer, eggLevel.dimension(), true, spawn.x, spawn.y, spawn.z, CardKingdomEggRoomUtil.SPAWN_YAW);
+
+		serverPlayer.teleportTo(eggLevel, spawn.x, spawn.y, spawn.z, CardKingdomEggRoomUtil.SPAWN_YAW, 0f);
+
 		onChangedToEggRoom(serverPlayer);
 	}
 
 	public static void onChangedToEggRoom(ServerPlayer player) {
-		if (!EggRoomUtil.isEggRoom(player.level())) return;
+		if (!CardKingdomEggRoomUtil.isEggRoom(player.level())) return;
 
 		prepareArrival(player);
 	}
@@ -176,7 +181,7 @@ public class EggRoomManager {
 	}
 
 	private static void prepareArrival(ServerPlayer player) {
-		if (!(player.level() instanceof ServerLevel eggLevel) || !EggRoomUtil.isEggRoom(eggLevel)) return;
+		if (!(player.level() instanceof ServerLevel eggLevel) || !CardKingdomEggRoomUtil.isEggRoom(eggLevel)) return;
 
 		ensurePlaced(eggLevel);
 
@@ -186,20 +191,17 @@ public class EggRoomManager {
 		LEFT_ENTRANCE.remove(player.getUUID());
 		player.getCapability(CapabilityRegistry.SOUL).ifPresent(cap -> cap.eggLeftEntrance = false);
 
-		Vec3 spawn = EggRoomUtil.spawnPos();
+		Vec3 spawn = CardKingdomEggRoomUtil.spawnPos();
 
-		beginTransit(player, eggLevel.dimension(), true, spawn.x, spawn.y, spawn.z, EggRoomUtil.SPAWN_YAW);
-		scheduleResync(player, true, spawn.x, spawn.y, spawn.z, EggRoomUtil.SPAWN_YAW);
+		beginTransit(player, eggLevel.dimension(), true, spawn.x, spawn.y, spawn.z, CardKingdomEggRoomUtil.SPAWN_YAW);
+		scheduleResync(player, true, spawn.x, spawn.y, spawn.z, CardKingdomEggRoomUtil.SPAWN_YAW);
 	}
 
 	public static void leaveToOrigin(ServerPlayer player) {
 		if (!LEAVING.add(player.getUUID())) return;
 
-		try {
-			leaveToOriginInner(player);
-		} finally {
-			LEAVING.remove(player.getUUID());
-		}
+		leaveToOriginInner(player);
+		LEAVING.remove(player.getUUID());
 	}
 
 	private static void leaveToOriginInner(ServerPlayer player) {
@@ -258,6 +260,7 @@ public class EggRoomManager {
 			y = door.getY();
 			z = door.getZ() + 0.5 + facing.getStepZ() * 1.6;
 			yaw = facing.toYRot();
+
 			ScarletLogMysteriousDoorBlock.setOpen(dest, door, doorState, true);
 			dest.playSound(null, door, SoundEvents.CHERRY_WOOD_DOOR_OPEN, SoundSource.BLOCKS, 1f, 1f);
 			PENDING_DOORS.add(new PendingDoor(dest.dimension(), door.immutable(), dest.getGameTime() + 20));
@@ -278,21 +281,28 @@ public class EggRoomManager {
 
 	public static void tickPendingDoors(ServerLevel level) {
 		Iterator<PendingDoor> iterator = PENDING_DOORS.iterator();
+
 		while (iterator.hasNext()) {
 			PendingDoor pending = iterator.next();
+
 			if (!pending.dimension.equals(level.dimension())) {
 				continue;
 			}
+
 			if (level.getGameTime() < pending.when) {
 				continue;
 			}
+
 			iterator.remove();
 			BlockState state = level.getBlockState(pending.door);
 			if (state.getBlock() instanceof ScarletLogMysteriousDoorBlock) {
 				ScarletLogMysteriousDoorBlock.setOpen(level, pending.door, state, false);
+
 				level.playSound(null, pending.door, SoundEvents.CHERRY_WOOD_DOOR_CLOSE, SoundSource.BLOCKS, 1f, 1f);
+
 				BlockPos lower = ScarletLogMysteriousDoorBlock.lowerPos(pending.door, state);
 				BlockState log = BlockRegistry.SCARLET_LOG.get().defaultBlockState();
+
 				level.setBlock(lower, log, 3);
 				level.setBlock(lower.above(), log, 3);
 			}
@@ -301,68 +311,74 @@ public class EggRoomManager {
 
 	public static void tickPlayer(ServerPlayer player) {
 		tickTransit(player);
-		if (!EggRoomUtil.isEggRoom(player.level())) {
+
+		if (!CardKingdomEggRoomUtil.isEggRoom(player.level())) {
 			return;
 		}
+
 		if (!(player.level() instanceof ServerLevel eggLevel)) {
 			return;
 		}
+
 		ensurePlaced(eggLevel);
 		SoulCapability cap = player.getCapability(CapabilityRegistry.SOUL).orElse(null);
-		if (cap == null) {
+
+        if (LEAVING.contains(player.getUUID()) || isInTransit(player.getUUID())) {
 			return;
 		}
-		if (LEAVING.contains(player.getUUID()) || isInTransit(player.getUUID())) {
-			return;
-		}
+
 		player.setNoGravity(false);
 		player.setSprinting(false);
 		player.fallDistance = 0f;
 		double x = player.getX();
 		double y = player.getY();
 		double z = player.getZ();
-		boolean fallen = y < EggRoomUtil.FLOOR_Y;
+		boolean fallen = y < CardKingdomEggRoomUtil.FLOOR_Y;
 		if (fallen) {
 			settleAtSpawn(player);
 			return;
 		}
-		if (EggRoomUtil.northOfRoom(z) && LEFT_ENTRANCE.contains(player.getUUID())) {
+
+		if (CardKingdomEggRoomUtil.northOfRoom(z) && LEFT_ENTRANCE.contains(player.getUUID())) {
 			leaveToOrigin(player);
 			return;
 		}
-		boolean inEntrance = EggRoomUtil.inEntranceZone(x, z);
-		if (!inEntrance && z > EggRoomUtil.LEFT_ENTRANCE_Z) {
+
+		boolean inEntrance = CardKingdomEggRoomUtil.inEntranceZone(x, z);
+		if (!inEntrance && z > CardKingdomEggRoomUtil.LEFT_ENTRANCE_Z) {
 			LEFT_ENTRANCE.add(player.getUUID());
 			cap.eggLeftEntrance = true;
 		}
+
 		if (LEFT_ENTRANCE.contains(player.getUUID()) && inEntrance) {
 			leaveToOrigin(player);
 		}
 	}
 
 	public static void tryInteract(ServerPlayer player) {
-		if (!EggRoomUtil.isEggRoom(player.level()) || !(player.level() instanceof ServerLevel eggLevel) || isInTransit(player.getUUID())) {
+		if (!CardKingdomEggRoomUtil.isEggRoom(player.level()) || !(player.level() instanceof ServerLevel eggLevel) || isInTransit(player.getUUID())) {
 			return;
 		}
+
 		long tick = eggLevel.getGameTime();
 		Long last = INTERACT_TICK.put(player.getUUID(), tick);
 		if (last != null && last == tick) {
 			return;
 		}
+
 		ensurePlaced(eggLevel);
+
 		Data data = Data.get(eggLevel);
 		double x = player.getX();
 		double z = player.getZ();
 		SoulCapability cap = player.getCapability(CapabilityRegistry.SOUL).orElse(null);
-		if (cap == null) {
-			return;
-		}
-		boolean gone = cap.hasEggRoomManGone(EggRoomUtil.CARD_KINGDOM_BIT);
+        boolean gone = cap.hasEggRoomManGone(CardKingdomEggRoomUtil.CARD_KINGDOM_BIT);
 		String script = null;
-		if (EggRoomUtil.inTreeFront(x, z, data.treeX, data.treeZ)) {
-			script = gone ? ClientBoundTextBoxPacket.TREE_FRONT_GONE : ClientBoundTextBoxPacket.TREE_FRONT;
-		} else if (EggRoomUtil.inTreeBehind(x, z, data.treeX, data.treeZ)) {
-			script = gone ? ClientBoundTextBoxPacket.TREE_BEHIND_GONE : ClientBoundTextBoxPacket.TREE_BEHIND;
+
+		if (CardKingdomEggRoomUtil.inTreeFront(x, z, data.treeX, data.treeZ)) {
+			script = gone ? ClientBoundTextBoxPacket.CARD_KINGDOM_EGG_ROOM_TREE_FRONT_GONE : ClientBoundTextBoxPacket.CARD_KINGDOM_EGG_ROOM_TREE_FRONT;
+		} else if (CardKingdomEggRoomUtil.inTreeBehind(x, z, data.treeX, data.treeZ)) {
+			script = gone ? ClientBoundTextBoxPacket.CARD_KINGDOM_EGG_ROOM_TREE_BEHIND_GONE : ClientBoundTextBoxPacket.CARD_KINGDOM_EGG_ROOM_TREE_BEHIND;
 		}
 
 		if (script != null) {
@@ -370,40 +386,12 @@ public class EggRoomManager {
 		}
 	}
 
-	public static void handleTextBoxChoice(ServerPlayer player, String scriptId, boolean yes) {
-		if (!ClientBoundTextBoxPacket.TREE_BEHIND.equals(scriptId)) {
-			return;
-		}
-
-		SoulCapability cap = player.getCapability(CapabilityRegistry.SOUL).orElse(null);
-		if (cap.hasEggRoomManGone(EggRoomUtil.CARD_KINGDOM_BIT)) {
-			return;
-		}
-
-		cap.setEggRoomManGone(EggRoomUtil.CARD_KINGDOM_BIT);
-		if (yes) {
-			if (!cap.hasEggObtained(EggRoomUtil.CARD_KINGDOM_BIT)) {
-				cap.setEggObtained(EggRoomUtil.CARD_KINGDOM_BIT);
-
-				if (!player.addItem(new ItemStack(ItemRegistry.EGG.get()))) {
-					player.drop(new ItemStack(ItemRegistry.EGG.get()), false);
-				}
-			}
-
-			PacketHandlerRegistry.INSTANCE.send(PacketDistributor.PLAYER.with(() -> player),
-					new ClientBoundTextBoxPacket(ClientBoundTextBoxPacket.RECEIVED_EGG));
-		} else {
-			PacketHandlerRegistry.INSTANCE.send(PacketDistributor.PLAYER.with(() -> player),
-					new ClientBoundTextBoxPacket(ClientBoundTextBoxPacket.THEN_NEEDNT));
-		}
-	}
-
 	private static void settleAtSpawn(ServerPlayer player) {
-		if (!EggRoomUtil.isEggRoom(player.level()) || isInTransit(player.getUUID())) {
+		if (!CardKingdomEggRoomUtil.isEggRoom(player.level()) || isInTransit(player.getUUID())) {
 			return;
 		}
 
-		Vec3 spawn = EggRoomUtil.spawnPos();
+		Vec3 spawn = CardKingdomEggRoomUtil.spawnPos();
 		player.setNoGravity(false);
 		player.setDeltaMovement(Vec3.ZERO);
 		player.fallDistance = 0f;
@@ -412,10 +400,10 @@ public class EggRoomManager {
 	}
 
 	private static void applySpawnFacing(ServerPlayer player) {
-		player.setYRot(EggRoomUtil.SPAWN_YAW);
+		player.setYRot(CardKingdomEggRoomUtil.SPAWN_YAW);
 		player.setXRot(0f);
-		player.setYHeadRot(EggRoomUtil.SPAWN_YAW);
-		player.setYBodyRot(EggRoomUtil.SPAWN_YAW);
+		player.setYHeadRot(CardKingdomEggRoomUtil.SPAWN_YAW);
+		player.setYBodyRot(CardKingdomEggRoomUtil.SPAWN_YAW);
 	}
 
 	private static boolean isInTransit(UUID id) {
@@ -425,8 +413,10 @@ public class EggRoomManager {
 	private static void beginTransit(ServerPlayer player, ResourceKey<Level> destDim, boolean eggRoom, double x, double y, double z, float yaw) {
 		UUID id = player.getUUID();
 		boolean first = TRANSIT.add(id);
+
 		TRANSIT_UNTIL.put(id, System.currentTimeMillis() + ARRIVAL_GRACE_MS);
 		TRANSIT_DEST.put(id, new TransitDest(eggRoom, x, y, z, yaw));
+
 		player.setNoGravity(true);
 		player.setDeltaMovement(Vec3.ZERO);
 		player.fallDistance = 0f;
@@ -463,8 +453,10 @@ public class EggRoomManager {
 		if (!(player.level() instanceof ServerLevel level)) {
 			return;
 		}
+
 		player.connection.teleport(x, y, z, yaw, 0f);
-		if (eggRoom && EggRoomUtil.isEggRoom(level)) {
+
+		if (eggRoom && CardKingdomEggRoomUtil.isEggRoom(level)) {
 			applySpawnFacing(player);
 			sendRoomToPlayer(player, level, Data.get(level));
 		} else {
@@ -474,9 +466,11 @@ public class EggRoomManager {
 
 	private static void tickTransit(ServerPlayer player) {
 		UUID id = player.getUUID();
+
 		if (!TRANSIT.contains(id)) {
 			return;
 		}
+
 		player.setNoGravity(true);
 		player.setDeltaMovement(Vec3.ZERO);
 		player.fallDistance = 0f;
@@ -484,19 +478,23 @@ public class EggRoomManager {
 		Long until = TRANSIT_UNTIL.get(id);
 		if (until != null && System.currentTimeMillis() >= until) {
 			TransitDest dest = TRANSIT_DEST.get(id);
+
 			if (dest != null) {
 				resyncNow(player, dest.eggRoom, dest.x, dest.y, dest.z, dest.yaw);
 			}
+
 			endTransit(player);
 		}
 	}
 
 	private static void endTransit(ServerPlayer player) {
 		UUID id = player.getUUID();
+
 		TRANSIT.remove(id);
 		TRANSIT_UNTIL.remove(id);
 		TRANSIT_DEST.remove(id);
 		RESYNC_SCHEDULED.remove(id);
+
 		player.setNoGravity(false);
 	}
 
@@ -523,9 +521,10 @@ public class EggRoomManager {
 		int maxCx = (data.maxX >> 4) + 1;
 		int minCz = (data.minZ >> 4) - 1;
 		int maxCz = (data.maxZ >> 4) + 1;
-		ChunkPos center = new ChunkPos(BlockPos.containing(EggRoomUtil.SPAWN_X, EggRoomUtil.SPAWN_Y, EggRoomUtil.SPAWN_Z));
+		ChunkPos center = new ChunkPos(BlockPos.containing(CardKingdomEggRoomUtil.SPAWN_X, CardKingdomEggRoomUtil.SPAWN_Y, CardKingdomEggRoomUtil.SPAWN_Z));
 		level.getChunkSource().addRegionTicket(TicketType.POST_TELEPORT, center, 3, player.getId());
 		player.connection.send(new ClientboundSetChunkCacheCenterPacket(center.x, center.z));
+
 		for (int cx = minCx; cx <= maxCx; cx++) {
 			for (int cz = minCz; cz <= maxCz; cz++) {
 				LevelChunk chunk = level.getChunk(cx, cz);
@@ -539,6 +538,7 @@ public class EggRoomManager {
 		level.getChunkSource().addRegionTicket(TicketType.POST_TELEPORT, center, 3, player.getId());
 		player.connection.send(new ClientboundSetChunkCacheCenterPacket(center.x, center.z));
 		int radius = 2;
+
 		for (int cx = center.x - radius; cx <= center.x + radius; cx++) {
 			for (int cz = center.z - radius; cz <= center.z + radius; cz++) {
 				LevelChunk chunk = level.getChunk(cx, cz);
@@ -575,14 +575,14 @@ public class EggRoomManager {
 	public static class Data extends SavedData {
 		public static final String ID = PenumbraPhantasm.MODID + "_egg_room";
 		public boolean placed;
-		public int minX = EggRoomUtil.MIN_X;
-		public int minY = EggRoomUtil.PLACE_Y;
-		public int minZ = EggRoomUtil.MIN_Z;
-		public int maxX = EggRoomUtil.MAX_X;
-		public int maxY = EggRoomUtil.PLACE_Y + 9;
-		public int maxZ = EggRoomUtil.MAX_Z;
+		public int minX = CardKingdomEggRoomUtil.MIN_X;
+		public int minY = CardKingdomEggRoomUtil.PLACE_Y;
+		public int minZ = CardKingdomEggRoomUtil.MIN_Z;
+		public int maxX = CardKingdomEggRoomUtil.MAX_X;
+		public int maxY = CardKingdomEggRoomUtil.PLACE_Y + 9;
+		public int maxZ = CardKingdomEggRoomUtil.MAX_Z;
 		public int treeX;
-		public int treeY = EggRoomUtil.PLACE_Y + 1;
+		public int treeY = CardKingdomEggRoomUtil.PLACE_Y + 1;
 		public int treeZ;
 
 		public static Data get(ServerLevel level) {

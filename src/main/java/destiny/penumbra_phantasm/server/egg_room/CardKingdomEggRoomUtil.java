@@ -9,7 +9,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
 
-public final class EggRoomUtil {
+public final class CardKingdomEggRoomUtil {
 	public static final ResourceKey<Level> CARD_KINGDOM_EGG_ROOM = ResourceKey.create(Registries.DIMENSION,
 			new ResourceLocation(PenumbraPhantasm.MODID, "egg_room_card_kingdom"));
 
@@ -36,7 +36,7 @@ public final class EggRoomUtil {
 	public static final double ENTRANCE_Z = MIN_Z + 2;
 	public static final double LEFT_ENTRANCE_Z = SPAWN_Z;
 
-	private EggRoomUtil() {
+	private CardKingdomEggRoomUtil() {
 	}
 
 	public static boolean isEggRoom(Level level) {
@@ -82,6 +82,7 @@ public final class EggRoomUtil {
 		double dz = targetZ - camZ;
 		float yaw = (float) (Mth.atan2(dz, dx) * (180.0 / Math.PI)) - 90.0F;
 		float pitch = (float) -(Mth.atan2(dy, Math.sqrt(dx * dx + dz * dz)) * (180.0 / Math.PI));
+
 		return new Vec2(yaw, pitch);
 	}
 
@@ -89,15 +90,18 @@ public final class EggRoomUtil {
 		double ax = playerX - CAMERA_X;
 		double az = playerZ - CAMERA_Z;
 		double len = Math.sqrt(ax * ax + az * az);
+
 		if (len < 1.0E-4) {
 			return new Vec2(0f, 1f);
 		}
+
 		return new Vec2((float) (ax / len), (float) (az / len));
 	}
 
 	public static Vec2 worldWish(Vec2 away, float forwardImpulse, float leftImpulse) {
 		float rightX = away.y;
 		float rightZ = -away.x;
+
 		return new Vec2(away.x * forwardImpulse + rightX * leftImpulse,
 				away.y * forwardImpulse + rightZ * leftImpulse);
 	}
@@ -105,6 +109,7 @@ public final class EggRoomUtil {
 	public static Vec2 worldToLocal(Vec2 world, float yRot) {
 		float sin = Mth.sin(yRot * ((float) Math.PI / 180f));
 		float cos = Mth.cos(yRot * ((float) Math.PI / 180f));
+
 		return new Vec2(world.x * cos + world.y * sin, world.y * cos - world.x * sin);
 	}
 

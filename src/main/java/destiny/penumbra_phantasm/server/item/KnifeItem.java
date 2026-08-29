@@ -8,6 +8,7 @@ import java.util.Optional;
 import java.util.Set;
 
 import destiny.penumbra_phantasm.ServerConfig;
+import destiny.penumbra_phantasm.client.network.ClientBoundTextBoxPacket;
 import destiny.penumbra_phantasm.server.capability.SoulCapability;
 import net.minecraft.world.phys.Vec2;
 import org.jetbrains.annotations.NotNull;
@@ -117,19 +118,27 @@ public class KnifeItem extends SwordItem {
 
         //Cancel making a fountain in depths
         if (DarkWorldUtil.isDepths(level)) {
-            player.displayClientMessage(Component.translatable("message.penumbra_phantasm.making_fountain_inside_depths"), true);
+            if (player instanceof ServerPlayer serverPlayer) {
+                PacketHandlerRegistry.INSTANCE.send(PacketDistributor.PLAYER.with(() -> serverPlayer),
+                        new ClientBoundTextBoxPacket(ClientBoundTextBoxPacket.MAKING_FOUNTAIN_INSIDE_DEPTHS));
+            }
             return InteractionResultHolder.fail(stack);
         }
 
         //Cancel making a fountain in dark worlds
         if (DarkWorldUtil.isDarkWorld(level)) {
-            player.displayClientMessage(Component.translatable("message.penumbra_phantasm.making_fountain_inside_dark_world"), true);
+            if (player instanceof ServerPlayer serverPlayer) {
+                PacketHandlerRegistry.INSTANCE.send(PacketDistributor.PLAYER.with(() -> serverPlayer),
+                        new ClientBoundTextBoxPacket(ClientBoundTextBoxPacket.MAKING_FOUNTAIN_INSIDE_DARK_WORLD));
+            }
             return InteractionResultHolder.fail(stack);
         }
 
         BlockPos occupancyPos = player.getOnPos().above();
         Vec2 occupancyPosFlat = new Vec2(occupancyPos.getX(), occupancyPos.getZ());
-        if (DarkFountain.isDepthsXzOccupied(((ServerLevel) level).getServer(), occupancyPosFlat)) {
+        Vec2 bumpedDepthsPos = DarkFountain.getBumpedDepthsXZ(level.getServer(), occupancyPosFlat);
+
+        if (DarkFountain.isDepthsXzOccupied(((ServerLevel) level).getServer(), bumpedDepthsPos)) {
             player.displayClientMessage(Component.translatable("message.penumbra_phantasm.making_fountain_depths_conflict"), true);
             return InteractionResultHolder.fail(stack);
         }
@@ -533,8 +542,9 @@ public class KnifeItem extends SwordItem {
         ServerLevel depths = DarkWorldUtil.getDepths(level.getServer());
         if (depths != null) {
             int depthsX = DarkFountain.scaledDepthsX(fountainPos.getX());
-            int depthsZ = DarkFountain.scaledDepthsZ(fountainPos.getZ());
+            int depthsZ = DarkFountain.scaledDepthsX(fountainPos.getZ());
             Vec2 depthsPos = new Vec2(depthsX, depthsZ);
+            depthsPos = DarkFountain.getBumpedDepthsXZ(depths, depthsPos);
 
             if (DarkFountain.isDepthsXzOccupied(depths, depthsPos)) {
                 lightCap.removeDarkFountain(level, fountainPos);
@@ -546,9 +556,7 @@ public class KnifeItem extends SwordItem {
                 return;
             }
 
-            depthsPos = DarkFountain.getBumpedDepthsXZ(depths, depthsPos);
-
-            BlockPos depthsFountainPos = DarkFountain.resolveDepthsFountainPos(depths, depthsPos);
+            BlockPos depthsFountainPos = DarkFountain.getHeightmappedDepthsPos(depths, depthsPos);
             ResourceKey<Level> darkDimension = targetLevel.dimension();
 
             depths.getCapability(CapabilityRegistry.DARK_FOUNTAIN).ifPresent(depthsCap -> {

@@ -1,7 +1,10 @@
 package destiny.penumbra_phantasm.client.render.screen.component;
 
 import destiny.penumbra_phantasm.client.render.RenderBlitUtil;
+import destiny.penumbra_phantasm.server.util.DarkWorldUtil;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.NonNullList;
 import net.minecraft.util.Mth;
 import net.minecraft.world.inventory.Slot;
@@ -71,6 +74,12 @@ public abstract class AbstractDarkWorldFurnaceRecipeBookComponent extends DarkWo
 		if (this.isVisible()) {
 			float t = (float) this.glowTicker / (float) GLOW_TICKER_UPPER_BOUND;
 			float glow = Mth.sin(t * Mth.PI);
+
+			LocalPlayer player = Minecraft.getInstance().player;
+
+			if (player != null && DarkWorldUtil.isDepths(player.level())) {
+				glow = 0;
+			}
 
 			pGuiGraphics.pose().pushPose();
 			pGuiGraphics.pose().translate(0.0F, 0.0F, 100.0F);

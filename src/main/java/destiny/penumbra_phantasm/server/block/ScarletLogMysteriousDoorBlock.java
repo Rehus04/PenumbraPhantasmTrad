@@ -1,7 +1,7 @@
 package destiny.penumbra_phantasm.server.block;
 
-import destiny.penumbra_phantasm.server.egg_room.EggRoomManager;
-import destiny.penumbra_phantasm.server.egg_room.EggRoomUtil;
+import destiny.penumbra_phantasm.server.egg_room.CardKingdomEggRoomManager;
+import destiny.penumbra_phantasm.server.egg_room.CardKingdomEggRoomUtil;
 import destiny.penumbra_phantasm.server.util.DarkWorldUtil;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -63,7 +63,7 @@ public class ScarletLogMysteriousDoorBlock extends HorizontalDirectionalBlock {
 
 	@Override
 	public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
-		if (!DarkWorldUtil.isDarkWorld(level) || !EggRoomUtil.isCardKingdomPlayable(level)) {
+		if (!DarkWorldUtil.isDarkWorld(level) || !CardKingdomEggRoomUtil.isCardKingdomPlayable(level)) {
 			return InteractionResult.SUCCESS;
 		}
 		if (level.isClientSide) {
@@ -84,13 +84,13 @@ public class ScarletLogMysteriousDoorBlock extends HorizontalDirectionalBlock {
 		if (state.getValue(HALF) != DoubleBlockHalf.LOWER) {
 			return;
 		}
-		if (!DarkWorldUtil.isDarkWorld(level) || !EggRoomUtil.isCardKingdomPlayable(level)) {
+		if (!DarkWorldUtil.isDarkWorld(level) || !CardKingdomEggRoomUtil.isCardKingdomPlayable(level)) {
 			return;
 		}
 		if (!isEnteringFromFront(state, pos, player)) {
 			return;
 		}
-		EggRoomManager.enterFromDoor(player, level, lowerPos(pos, state));
+		CardKingdomEggRoomManager.enterFromDoor(player, level, lowerPos(pos, state));
 	}
 
 	private static boolean isEnteringFromFront(BlockState state, BlockPos pos, Player player) {

@@ -43,8 +43,42 @@ public class ItemRegistry {
     public static final RegistryObject<Item> BLACK_SHARD = ITEMS.register("black_shard",
             () -> new SwordItem(Tiers.NETHERITE, 5, -2, basicItem()));
 
+    //Foods
     public static final RegistryObject<Item> DARK_CANDY = ITEMS.register("dark_candy",
-            () -> new DeterminationFoodItem(new Item.Properties().food(new FoodProperties.Builder().nutrition(4).saturationMod(0.5f).fast().alwaysEat().build()), 6, SoundRegistry.HEAL.get()));
+            () -> new DarkWorldFoodFlavorItem(new Item.Properties().food(new FoodProperties.Builder().nutrition(4).saturationMod(0.3f)
+                    .fast().alwaysEat().build()), 6, SoundRegistry.HEAL.get()));
+    public static final RegistryObject<Item> CHOCO_DIAMOND = ITEMS.register("choco_diamond",
+            () -> new DarkWorldFoodFlavorItem(new Item.Properties().food(new FoodProperties.Builder().nutrition(14).saturationMod(0.6f)
+                    .build()), 0, SoundRegistry.HEAL.get()));
+    public static final RegistryObject<Item> DARKBURGER = ITEMS.register("darkburger",
+            () -> new DarkWorldFoodFlavorItem(new Item.Properties().food(new FoodProperties.Builder().nutrition(8).saturationMod(0.5f)
+                    .build()), 0, SoundRegistry.HEAL.get()));
+    public static final RegistryObject<Item> DOUBLE_DARKBURGER = ITEMS.register("double_darkburger",
+            () -> new DarkWorldFoodFlavorItem(new Item.Properties().food(new FoodProperties.Builder().nutrition(16).saturationMod(0.75f)
+                    .build()), 0, SoundRegistry.HEAL.get()));
+    public static final RegistryObject<Item> HEARTS_DONUT = ITEMS.register("hearts_donut",
+            () -> new DarkWorldFoodFlavorItem(new Item.Properties().food(new FoodProperties.Builder().nutrition(10).saturationMod(0.4f)
+                    .build()), 0, SoundRegistry.HEAL.get()));
+    public static final RegistryObject<Item> LANCER_COOKIE = ITEMS.register("lancer_cookie",
+            () -> new DarkWorldFoodFlavorItem(new Item.Properties().food(new FoodProperties.Builder().nutrition(12).saturationMod(0.8f)
+                    .build()), 10, SoundRegistry.HEAL.get()));
+
+    //Consumables
+    public static final RegistryObject<Item> TENSION_BIT = ITEMS.register("tension_bit",
+            () -> new FlavorTooltipItem(new Item.Properties().stacksTo(16)));
+
+    public static final RegistryObject<Item> DOOR_KEY = ITEMS.register("door_key",
+            () -> new FlavorTooltipItem(new Item.Properties().stacksTo(1)));
+
+    //Money
+    public static final RegistryObject<Item> DARK_DOLLAR = ITEMS.register("dark_dollar",
+            () -> new FlavorTooltipItem(new Item.Properties()));
+    public static final RegistryObject<Item> DARK_DIME = ITEMS.register("dark_dime",
+            () -> new FlavorTooltipItem(new Item.Properties()));
+    public static final RegistryObject<Item> DARK_WALLET = ITEMS.register("dark_wallet",
+            () -> new FlavorTooltipItem(new Item.Properties()));
+    public static final RegistryObject<Item> GLOWSHARD = ITEMS.register("glowshard",
+            () -> new FlavorTooltipItem(new Item.Properties().stacksTo(1)));
 
     public static final RegistryObject<Item> FRIEND = ITEMS.register("friend",
             () -> new FriendItem(basicItem()));

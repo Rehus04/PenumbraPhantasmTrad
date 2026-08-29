@@ -11,7 +11,7 @@ import destiny.penumbra_phantasm.client.render.overlay.FountainDarknessOverlay;
 import destiny.penumbra_phantasm.client.render.screen.IntroScreen;
 import destiny.penumbra_phantasm.client.render.textbox.DarkWorldDialogue;
 import destiny.penumbra_phantasm.client.render.textbox.DarkWorldTextBox;
-import destiny.penumbra_phantasm.server.egg_room.EggRoomUtil;
+import destiny.penumbra_phantasm.server.egg_room.CardKingdomEggRoomUtil;
 import destiny.penumbra_phantasm.server.registry.CapabilityRegistry;
 import destiny.penumbra_phantasm.server.util.DarkWorldUtil;
 import net.minecraft.client.Camera;
@@ -54,7 +54,7 @@ public class GameRendererMixin {
 	@Unique
 	private static boolean penumbraPhantasm$inEggRoom() {
 		Level level = Minecraft.getInstance().level;
-		return level != null && EggRoomUtil.isEggRoom(level);
+		return level != null && CardKingdomEggRoomUtil.isEggRoom(level);
 	}
 
 	@Inject(method = "render", at = @At("TAIL"))
