@@ -62,6 +62,7 @@ public class DepthsDimensionEffects extends DimensionSpecialEffects {
     private final VertexBuffer lowerSkyBuffer;
     private final VertexBuffer dynamicTexturedBuffer;
     private final VertexBuffer dynamicColorBuffer;
+    private final VertexBuffer dynamicColorBufferBackground;
 
     private long spriteSeed = Long.MIN_VALUE;
     private List<Sprite> sprites = List.of();
@@ -72,6 +73,7 @@ public class DepthsDimensionEffects extends DimensionSpecialEffects {
         this.lowerSkyBuffer = createSkyBuffer(-SKY_DISC_HEIGHT);
         this.dynamicTexturedBuffer = new VertexBuffer(VertexBuffer.Usage.STATIC);
         this.dynamicColorBuffer = new VertexBuffer(VertexBuffer.Usage.STATIC);
+        this.dynamicColorBufferBackground = new VertexBuffer(VertexBuffer.Usage.STATIC);
     }
 
     @Override
@@ -199,7 +201,7 @@ public class DepthsDimensionEffects extends DimensionSpecialEffects {
         BufferBuilder.RenderedBuffer renderedBuffer = bufferBuilder.end();
         this.dynamicColorBuffer.bind();
         this.dynamicColorBuffer.upload(renderedBuffer);
-        this.dynamicColorBuffer.drawWithShader(poseStack.last().pose(), projectionMatrix, ModShaders.FOUNTAIN_MASKED);
+        this.dynamicColorBuffer.drawWithShader(poseStack.last().pose(), projectionMatrix, RenderSystem.getShader());
 
         VertexBuffer.unbind();
     }
@@ -228,10 +230,10 @@ public class DepthsDimensionEffects extends DimensionSpecialEffects {
         }
 
         BufferBuilder.RenderedBuffer renderedBuffer = bufferBuilder.end();
-        this.dynamicColorBuffer.bind();
-        this.dynamicColorBuffer.upload(renderedBuffer);
+        this.dynamicColorBufferBackground.bind();
+        this.dynamicColorBufferBackground.upload(renderedBuffer);
 
-        Color middleColor = Color.getHSBColor(0f, 0f, 0.01f);
+        Color middleColor = Color.getHSBColor(0f, 0f, 0.02f);
         ShaderInstance shaderInstance = ModShaders.FOUNTAIN_MASKED;
 
         if (shaderInstance != null) {
@@ -271,7 +273,7 @@ public class DepthsDimensionEffects extends DimensionSpecialEffects {
 
         RenderSystem.setShaderColor(1f, 1f, 1f, 1f);
 
-        this.dynamicColorBuffer.drawWithShader(poseStack.last().pose(), projectionMatrix, ModShaders.FOUNTAIN_MASKED);
+        this.dynamicColorBufferBackground.drawWithShader(poseStack.last().pose(), projectionMatrix, ModShaders.FOUNTAIN_MASKED);
 
         VertexBuffer.unbind();
     }
