@@ -541,8 +541,8 @@ public class KnifeItem extends SwordItem {
         //Depths fountain
         ServerLevel depths = DarkWorldUtil.getDepths(level.getServer());
         if (depths != null) {
-            int depthsX = fountainPos.getX();
-            int depthsZ = fountainPos.getZ();
+            int depthsX = DarkFountain.scaledDepthsX(fountainPos.getX());
+            int depthsZ = DarkFountain.scaledDepthsX(fountainPos.getZ());
             Vec2 depthsPos = new Vec2(depthsX, depthsZ);
             depthsPos = DarkFountain.getBumpedDepthsXZ(depths, depthsPos);
 
