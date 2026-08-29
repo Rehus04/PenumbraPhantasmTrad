@@ -5,7 +5,23 @@
   "item.penumbra_phantasm.netherite_knife": "Couteau en netherite",
   "item.penumbra_phantasm.real_knife": "§4Vrai Couteau§r",
   "item.penumbra_phantasm.black_knife": "Couteau noir",
+
+   "item.penumbra_phantasm.dark_wallet": "Portefeuille d'ombre",
+  "item.penumbra_phantasm.dark_dollar": "Dollar d'ombre",
+  "item.penumbra_phantasm.dark_dime": "10 cents d'ombre",
+  "item.penumbra_phantasm.glowshard": "Luminéclat",
+  
   "item.penumbra_phantasm.dark_candy": "Bonbombre",
+  "item.penumbra_phantasm.choco_diamond": "Carreau de chocolat",
+  "item.penumbra_phantasm.darkburger": "BurgerSombre",
+  "item.penumbra_phantasm.double_darkburger": "Burger-DS",
+  "item.penumbra_phantasm.hearts_donut": "Beignet cœur",
+  "item.penumbra_phantasm.lancer_cookie": "Cookie Lancer",
+
+  "item.penumbra_phantasm.tension_bit": "Bit de tension",
+
+  "item.penumbra_phantasm.door_key": "Clé de porte",
+  
   "item.penumbra_phantasm.friend": "§eITEM§r§d_AMI§r",
   "item.penumbra_phantasm.soul_hearth": "Foyer d'ÂME",
   "item.penumbra_phantasm.fractal_mirror": "Miroir fractal",
@@ -354,9 +370,14 @@
   "block.penumbra_phantasm.scarlet_log_mysterious_door": "Porte Mystérieuse",
   "block.penumbra_phantasm.unbreakable_darkness": "Ténèbres",
 
+  "liquid.penumbra_phantasm.pure_darkness": "Pure obscurité",
+  "liquid.penumbra_phantasm.luminescent_water": "Eau luminescente",
+
   "itemGroup.penumbra_phantasm.main": "PENUMBRA PHANTASM",
   "itemGroup.penumbra_phantasm.card_kingdom": "ROYAUME DES CARTES",
   "itemGroup.penumbra_phantasm.the_depths": "LES TRÉFONDS",
+
+  "entity.penumbra_phantasm.sealing_soul": "ÂME",
   
   "advancement.penumbra_phantasm.soul_hearth.title": "TON pouvoir",
   "advancement.penumbra_phantasm.soul_hearth.description": "Éveillez un foyer d'ÂME",
@@ -434,6 +455,25 @@
   "tooltip.penumbra_phantasm.soul_hearth.connection_level": "CONNEXION: ",
   "tooltip.penumbra_phantasm.soul_hearth.not_owner": "L'ÂME EN SON SEIN VOUS REJETTE.",
   "tooltip.penumbra_phantasm.rosegold_lighter_fuel": "Combustible: ",
+
+  "tooltip.penumbra_phantasm.saturation": "SATURATION",
+  "tooltip.penumbra_phantasm.nutrition": "NUTRITION",
+
+  "flavor_text.penumbra_phantasm.dark_candy": "Une étoile rouge et noire au bon goût de guimauve.",
+  "flavor_text.penumbra_phantasm.choco_diamond": "Un peu petit, mais certaines personnes l'ADORENT.",
+  "flavor_text.penumbra_phantasm.darkburger": "Un mystérieux burger noir fait de... Hé, c'est complètement brûlé!",
+  "flavor_text.penumbra_phantasm.double_darkburger": "C'est un Burger double sombre. Cela prendra deux bouchées à finir!",
+  "flavor_text.penumbra_phantasm.hearts_donut": "Ça écœure, hein!? Rempli d'une gelée rouge et caoutchouteuse qui fait débat.",
+  "flavor_text.penumbra_phantasm.lancer_cookie": "Un cookie à l'effigie de la tête de Lancer. Peut-être pas un cookie.",
+
+  "flavor_text.penumbra_phantasm.tension_bit": "Augmente les PT par 32% en combat.",
+
+  "flavor_text.penumbra_phantasm.dark_dollar": "Un bout de papier brulé. Il est tamponné",
+  "flavor_text.penumbra_phantasm.dark_dime": "Une pièce tamponnée couverte de suie. Quelqu'un à essayé de la brûler?",
+  "flavor_text.penumbra_phantasm.dark_wallet": "Un portefeuille pour tes économies. Lui aussi, terriblement brûlé.",
+  "flavor_text.penumbra_phantasm.glowshard": "Un éclat scintillant. Sa valeur augmente chaque chapitre.",
+
+  "flavor_text.penumbra_phantasm.door_key": "Une clé ouvrant une mystérieuse cellule. Elle a quelque chose d'étrange.",
   
   "gui.penumbra_phantasm.dark_world_inventory_title": "INVENTAIRE",
   "gui.penumbra_phantasm.dark_world_inventory_crafting": "FABRIC.",
@@ -483,7 +523,7 @@
   "death.attack.penumbra_phantasm.injection_overdose": "%1$s était trop DÉTERMINÉ et a fondu(e) en bouillie",
   "death.attack.penumbra_phantasm.injection_overdose.player": "%1$s a été rendu(e) trop DÉTERMINÉ(E) PAR %2$s et a fondu(e) en bouillie",
   "death.attack.penumbra_phantasm.soul_damage": "%1$s ne pouvait pas arracher son ÂME",
-  
+  "death.attack.penumbra_phantasm.erosion": "La DÉTÉRMINATION de %1$s fut écrasée par les ténèbres",
 
   "container.penumbra_phantasm.umbrastone_furnace": "Fourneau sombre",
   "container.penumbra_phantasm.dark_world_inventory.narration.button.usage.hover": "CLIC GAUCHE POUR ACTIVER %s",
