@@ -10,24 +10,28 @@ import com.mojang.blaze3d.vertex.VertexFormat;
 import destiny.penumbra_phantasm.PenumbraPhantasm;
 import destiny.penumbra_phantasm.client.render.ModShaders;
 import net.minecraft.client.Camera;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.client.renderer.DimensionSpecialEffects;
-import net.minecraft.client.renderer.FogRenderer;
-import net.minecraft.client.renderer.GameRenderer;
-import net.minecraft.client.renderer.LightTexture;
+import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.client.renderer.*;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Matrix4f;
 
+import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 
 import static destiny.penumbra_phantasm.client.render.dimension.CardKingdomDimensionEffects.SKY_DISC_HEIGHT;
+import static destiny.penumbra_phantasm.client.render.dimension.DarkWorldDimensionEffects.createSkyBuffer;
 
 public class DepthsDimensionEffects extends DimensionSpecialEffects {
     public static final ResourceLocation DEPTHS_DIMENSION_EFFECTS = new ResourceLocation(PenumbraPhantasm.MODID, "depths_dimension_effects");
+
+    public static final ResourceLocation IMAGE_DEPTH = new ResourceLocation(PenumbraPhantasm.MODID, "textures/misc/image_depth.png");
+    public static final ResourceLocation WHITE_SCREEN = new ResourceLocation(PenumbraPhantasm.MODID, "textures/misc/white_screen.png");
 
     private static final ResourceLocation[] TITAN_TEXTURES = new ResourceLocation[]{
             new ResourceLocation(PenumbraPhantasm.MODID, "textures/environment/depths/titan_1.png"),
@@ -64,16 +68,14 @@ public class DepthsDimensionEffects extends DimensionSpecialEffects {
 
     public DepthsDimensionEffects() {
         super(Float.NaN, true, SkyType.NONE, false, false);
-        this.skyBuffer = createDepthsSkyBuffer(SKY_DISC_HEIGHT);
-        this.lowerSkyBuffer = createDepthsSkyBuffer(-SKY_DISC_HEIGHT);
+        this.skyBuffer = createSkyBuffer(SKY_DISC_HEIGHT);
+        this.lowerSkyBuffer = createSkyBuffer(-SKY_DISC_HEIGHT);
         this.dynamicTexturedBuffer = new VertexBuffer(VertexBuffer.Usage.STATIC);
         this.dynamicColorBuffer = new VertexBuffer(VertexBuffer.Usage.STATIC);
     }
 
     @Override
     public boolean renderSky(ClientLevel level, int ticks, float partialTick, PoseStack poseStack, Camera camera, Matrix4f projectionMatrix, boolean isFoggy, Runnable setupFog) {
-        if (skyBuffer == null || lowerSkyBuffer == null) return false;
-
         setupFog.run();
         RenderSystem.depthMask(false);
         RenderSystem.disableCull();
@@ -81,9 +83,9 @@ public class DepthsDimensionEffects extends DimensionSpecialEffects {
         RenderSystem.setShader(GameRenderer::getPositionShader);
 
         this.skyBuffer.bind();
-        this.skyBuffer.drawWithShader(poseStack.last().pose(), projectionMatrix, ModShaders.FOUNTAIN_MASKED);
+        this.skyBuffer.drawWithShader(poseStack.last().pose(), projectionMatrix, RenderSystem.getShader());
         this.lowerSkyBuffer.bind();
-        this.lowerSkyBuffer.drawWithShader(poseStack.last().pose(), projectionMatrix, ModShaders.FOUNTAIN_MASKED);
+        this.lowerSkyBuffer.drawWithShader(poseStack.last().pose(), projectionMatrix, RenderSystem.getShader());
         VertexBuffer.unbind();
 
         RenderSystem.setShaderColor(1F, 1F, 1F, 1F);
@@ -177,8 +179,8 @@ public class DepthsDimensionEffects extends DimensionSpecialEffects {
 
         ActiveFlash flash = this.getActiveFlash(level, partialTick);
         if (flash != null) {
-            RenderSystem.setShader(GameRenderer::getPositionColorShader);
-            bufferBuilder.begin(VertexFormat.Mode.TRIANGLES, DefaultVertexFormat.POSITION_COLOR);
+            RenderSystem.setShader(GameRenderer::getPositionColorTexShader);
+            bufferBuilder.begin(VertexFormat.Mode.TRIANGLES, DefaultVertexFormat.POSITION_COLOR_TEX);
             drawing = true;
 
             Vec3 flashCenter = new Vec3(Mth.cos(flash.event.azimuth()) * flash.event.radius(), FLASH_Y,
@@ -196,7 +198,51 @@ public class DepthsDimensionEffects extends DimensionSpecialEffects {
         BufferBuilder.RenderedBuffer renderedBuffer = bufferBuilder.end();
         this.dynamicColorBuffer.bind();
         this.dynamicColorBuffer.upload(renderedBuffer);
+
+        Color middleColor = Color.getHSBColor(0f, 0f, 0.01f);
+        ShaderInstance shaderInstance = ModShaders.FOUNTAIN_MASKED;
+
+        if (shaderInstance != null) {
+            float shadertime = (level.getGameTime()) * 0.01f;
+            shaderInstance.safeGetUniform("Time").set(shadertime);
+            Minecraft mc = Minecraft.getInstance();
+            float aspect = (float) mc.getWindow().getWidth() /
+                    (float) mc.getWindow().getHeight();
+
+            shaderInstance.safeGetUniform("AspectRatio").set(aspect);
+
+        }
+
+        LocalPlayer player = Minecraft.getInstance().player;
+
+        if(player != null) {
+            float middleRed = middleColor.getRed() / 255f;
+            float middleGreen = middleColor.getGreen() / 255f;
+            float middleBlue = middleColor.getBlue() / 255f;
+
+            float tintRed = 1f + (middleRed - 1f);
+            float tintGreen = 1f + (middleGreen - 1f);
+            float tintBlue = 1f + (middleBlue - 1f);
+
+            if (shaderInstance != null) {
+                shaderInstance.safeGetUniform("TintColor").set(
+                        tintRed,
+                        tintGreen,
+                        tintBlue,
+                        1f
+                );
+            }
+        }
+
+        RenderSystem.setShaderTexture(0, WHITE_SCREEN);
+        RenderSystem.setShaderTexture(1, IMAGE_DEPTH);
+
+        RenderSystem.setShaderColor(1f, 1f, 1f, 1f);
+
+        this.dynamicColorBuffer.drawWithShader(poseStack.last().pose(), projectionMatrix, ModShaders.FOUNTAIN_MASKED);
+
         this.dynamicColorBuffer.drawWithShader(poseStack.last().pose(), projectionMatrix, RenderSystem.getShader());
+
         VertexBuffer.unbind();
     }
 
@@ -298,8 +344,6 @@ public class DepthsDimensionEffects extends DimensionSpecialEffects {
         Tesselator tesselator = Tesselator.getInstance();
         BufferBuilder bufferBuilder = tesselator.getBuilder();
         BufferBuilder.RenderedBuffer renderedBuffer = DarkWorldDimensionEffects.buildDepthsSkyDisc(bufferBuilder, scale);
-
-        if (renderedBuffer == null) return null;
 
         skyBuffer.bind();
         skyBuffer.upload(renderedBuffer);

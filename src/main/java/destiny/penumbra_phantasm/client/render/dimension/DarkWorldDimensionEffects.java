@@ -27,9 +27,6 @@ import java.awt.*;
 public class DarkWorldDimensionEffects extends DimensionSpecialEffects {
     public static final ResourceLocation DARK_WORLD_DIMENSION_EFFECTS = new ResourceLocation(PenumbraPhantasm.MODID, "dark_world_dimension_effects");
 
-    public static final ResourceLocation IMAGE_DEPTH = new ResourceLocation(PenumbraPhantasm.MODID, "textures/misc/image_depth.png");
-    public static final ResourceLocation WHITE_SCREEN = new ResourceLocation(PenumbraPhantasm.MODID, "textures/misc/white_screen.png");
-
     protected VertexBuffer skyBuffer;
 
     public DarkWorldDimensionEffects() {
@@ -83,59 +80,15 @@ public class DarkWorldDimensionEffects extends DimensionSpecialEffects {
         float baseRadius = 512F;
         float invertibleBaseRadius = Math.signum(scale) * baseRadius;
 
-        ClientLevel level = Minecraft.getInstance().level;;
-
-        if (level == null) return null;
-
-        float time = (level.getGameTime()) * 0.1f;
-        float fountainHue = time * 0.03f % 1f;
-
-        Color middleColor = Color.getHSBColor(fountainHue, 1f, 1f);
-        ShaderInstance shaderInstance = ModShaders.FOUNTAIN_MASKED;
-
-        if (shaderInstance != null) {
-            float shadertime = (level.getGameTime()) * 0.05f;
-            shaderInstance.safeGetUniform("Time").set(shadertime);
-            Minecraft mc = Minecraft.getInstance();
-            float aspect = (float) mc.getWindow().getWidth() /
-                    (float) mc.getWindow().getHeight();
-
-            shaderInstance.safeGetUniform("AspectRatio").set(aspect);
-
-        }
-
-        LocalPlayer player = Minecraft.getInstance().player;
-
-        if(player != null) {
-            float middleRed = middleColor.getRed() / 255f;
-            float middleGreen = middleColor.getGreen() / 255f;
-            float middleBlue = middleColor.getBlue() / 255f;
-
-            float tintRed = 1f + (middleRed - 1f);
-            float tintGreen = 1f + (middleGreen - 1f);
-            float tintBlue = 1f + (middleBlue - 1f);
-
-            if (shaderInstance != null) {
-                shaderInstance.safeGetUniform("TintColor").set(
-                        tintRed,
-                        tintGreen,
-                        tintBlue,
-                        1f
-                );
-            }
-        }
-
-        RenderSystem.setShaderTexture(0, WHITE_SCREEN);
-        RenderSystem.setShaderTexture(1, IMAGE_DEPTH);
-
-        RenderSystem.setShaderColor(1f, 1f, 1f, 1f);
+        RenderSystem.setShader(GameRenderer::getPositionColorTexShader);
 
         builder.begin(VertexFormat.Mode.TRIANGLE_FAN, DefaultVertexFormat.POSITION_COLOR_TEX);
         builder.vertex(0, scale, 0).color(255, 255, 255, 255).uv(0.5f, 0.5f).endVertex();
 
         for(int i = -180; i <= 180; i += 45) {
             float radians = (float) Math.toRadians(i);
-            builder.vertex(invertibleBaseRadius * Mth.cos(radians), scale, baseRadius * Mth.sin(radians)).endVertex();
+            builder.vertex(invertibleBaseRadius * Mth.cos(radians), scale, baseRadius * Mth.sin(radians))
+                    .color(255, 255, 255, 255).uv(0.5f, 0.5f).endVertex();
         }
 
         return builder.end();
