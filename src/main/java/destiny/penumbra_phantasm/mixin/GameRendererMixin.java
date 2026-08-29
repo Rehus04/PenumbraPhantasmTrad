@@ -127,13 +127,14 @@ public class GameRendererMixin {
 		RenderSystem.defaultBlendFunc();
 		RenderSystem.setShaderColor(1f, 1f, 1f, 1f);
 
-		if (drawTextBox) {
-			DarkWorldTextBox.render(graphics, DarkWorldDialogue.writer(), width, height);
-		}
 		renderLandScreenFadeOut(graphics, width, height, landAlpha);
 		renderTransitionFadeOut(graphics, width, height, fountainAlpha);
 		PoseStack sealShinePose = new PoseStack();
 		renderSealShine(sealShinePose, width, height, sealShineTick);
+
+		if (drawTextBox) {
+			DarkWorldTextBox.render(graphics, DarkWorldDialogue.writer(), width, height);
+		}
 
 		graphics.flush();
 
