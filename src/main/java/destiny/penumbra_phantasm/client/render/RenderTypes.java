@@ -91,4 +91,33 @@ public class RenderTypes extends RenderType {
                 builder.createCompositeState(false)
         );
     }
+
+    public static RenderType negativePhotons(
+            ResourceLocation maskTex,
+            ResourceLocation flowTex,
+            boolean depthWrite
+    ) {
+        CompositeState.CompositeStateBuilder builder = RenderType.CompositeState.builder()
+                .setShaderState(FOUNTAIN_MASKED_SHADER)
+                .setTextureState(
+                        RenderStateShard.MultiTextureStateShard.builder()
+                                .add(maskTex, false, false)
+                                .add(flowTex, false, false)
+                                .build()
+                )
+                .setCullState(RenderStateShard.NO_CULL)
+                .setTransparencyState(TRANSLUCENT_TRANSPARENCY);
+        if (!depthWrite)
+            builder.setWriteMaskState(COLOR_WRITE);
+
+        return RenderType.create(
+                "fountain_masked_portal",
+                DefaultVertexFormat.POSITION_COLOR_TEX,
+                VertexFormat.Mode.QUADS,
+                256,
+                false,
+                false,
+                builder.createCompositeState(false)
+        );
+    }
 }

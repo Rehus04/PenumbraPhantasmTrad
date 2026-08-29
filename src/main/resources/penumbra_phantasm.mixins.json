@@ -19,10 +19,11 @@
     "DeathScreenMixin",
     "GameRendererMixin",
     "LevelRendererMixin",
+    "LightTextureMixin",
     "MouseHandlerMixin",
     "MusicSuppressionMixin",
     "PlayerMixin",
-    "LightTextureMixin"
+    "LiquidBlockRendererMixin"
   ],
   "injectors": {
     "defaultRequire": 1

@@ -210,6 +210,7 @@ public class ClientEvents {
 						}
 						if (renderShockwavePass) {
 							FountainRenderUtil.renderDepthsFountainBeam(fountain, pose, buffer, camera, distance2d);
+							renderNegativePhotonsBlocks();
 						}
 						pose.popPose();
 					} else if (renderSkyPass) {
@@ -279,6 +280,10 @@ public class ClientEvents {
 
 			GL11.glDisable(GL_DEPTH_CLAMP);
 		}
+	}
+
+	private void renderNegativePhotonsBlocks() {
+
 	}
 
 	@SubscribeEvent
