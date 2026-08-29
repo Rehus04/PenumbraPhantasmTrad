@@ -23,7 +23,10 @@ public class FluidRegistry {
     public static final RegistryObject<FlowingFluid> FLOWING_PURE_DARKNESS = FLUIDS.register("flowing_pure_darkness",
             () -> new ForgeFlowingFluid.Flowing(FluidRegistry.PURE_DARKNESS_PROPERTIES));
 
-
+    public static final RegistryObject<FlowingFluid> SOURCE_NEGATIVE_PHOTONS = FLUIDS.register("negative_photons",
+            () -> new ForgeFlowingFluid.Source(FluidRegistry.NEGATIVE_PHOTONS_PROPERTIES));
+    public static final RegistryObject<FlowingFluid> FLOWING_NEGATIVE_PHOTONS = FLUIDS.register("flowing_negative_photons",
+            () -> new ForgeFlowingFluid.Flowing(FluidRegistry.NEGATIVE_PHOTONS_PROPERTIES));
 
     public static final ForgeFlowingFluid.Properties LUMINESCENT_WATER_PROPERTIES = new ForgeFlowingFluid.Properties(
             FluidTypeRegistry.LUMINESCENT_WATER, SOURCE_LUMINESCENT_WATER, FLOWING_LUMINESCENT_WATER)
@@ -34,6 +37,10 @@ public class FluidRegistry {
             FluidTypeRegistry.PURE_DARKNESS, SOURCE_PURE_DARKNESS, FLOWING_PURE_DARKNESS)
             .slopeFindDistance(2).levelDecreasePerBlock(2).block(BlockRegistry.PURE_DARKNESS)
             .bucket(ItemRegistry.PURE_DARKNESS_BUCKET);
+
+    public static final ForgeFlowingFluid.Properties NEGATIVE_PHOTONS_PROPERTIES = new ForgeFlowingFluid.Properties(
+            FluidTypeRegistry.NEGATIVE_PHOTONS, SOURCE_NEGATIVE_PHOTONS, FLOWING_NEGATIVE_PHOTONS)
+            .slopeFindDistance(2).levelDecreasePerBlock(2).block(BlockRegistry.NEGATIVE_PHOTONS);
 
 
     public static void register(IEventBus eventBus) {

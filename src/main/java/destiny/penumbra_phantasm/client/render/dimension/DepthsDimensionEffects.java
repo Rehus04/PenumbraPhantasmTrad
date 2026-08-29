@@ -60,9 +60,9 @@ public class DepthsDimensionEffects extends DimensionSpecialEffects {
 
     private final VertexBuffer skyBuffer;
     private final VertexBuffer lowerSkyBuffer;
-    private final VertexBuffer dynamicTexturedBuffer;
-    private final VertexBuffer dynamicColorBuffer;
-    private final VertexBuffer dynamicColorBufferBackground;
+    private final VertexBuffer silhouettesBuffer;
+    private final VertexBuffer flashesBuffer;
+    private final VertexBuffer flashesBackgroundBuffer;
 
     private long spriteSeed = Long.MIN_VALUE;
     private List<Sprite> sprites = List.of();
@@ -71,9 +71,9 @@ public class DepthsDimensionEffects extends DimensionSpecialEffects {
         super(Float.NaN, true, SkyType.NONE, false, false);
         this.skyBuffer = createSkyBuffer(SKY_DISC_HEIGHT);
         this.lowerSkyBuffer = createSkyBuffer(-SKY_DISC_HEIGHT);
-        this.dynamicTexturedBuffer = new VertexBuffer(VertexBuffer.Usage.STATIC);
-        this.dynamicColorBuffer = new VertexBuffer(VertexBuffer.Usage.STATIC);
-        this.dynamicColorBufferBackground = new VertexBuffer(VertexBuffer.Usage.STATIC);
+        this.silhouettesBuffer = new VertexBuffer(VertexBuffer.Usage.STATIC);
+        this.flashesBuffer = new VertexBuffer(VertexBuffer.Usage.STATIC);
+        this.flashesBackgroundBuffer = new VertexBuffer(VertexBuffer.Usage.STATIC);
     }
 
     @Override
@@ -199,9 +199,9 @@ public class DepthsDimensionEffects extends DimensionSpecialEffects {
         }
 
         BufferBuilder.RenderedBuffer renderedBuffer = bufferBuilder.end();
-        this.dynamicColorBuffer.bind();
-        this.dynamicColorBuffer.upload(renderedBuffer);
-        this.dynamicColorBuffer.drawWithShader(poseStack.last().pose(), projectionMatrix, RenderSystem.getShader());
+        this.flashesBuffer.bind();
+        this.flashesBuffer.upload(renderedBuffer);
+        this.flashesBuffer.drawWithShader(poseStack.last().pose(), projectionMatrix, RenderSystem.getShader());
 
         VertexBuffer.unbind();
     }
@@ -230,8 +230,8 @@ public class DepthsDimensionEffects extends DimensionSpecialEffects {
         }
 
         BufferBuilder.RenderedBuffer renderedBuffer = bufferBuilder.end();
-        this.dynamicColorBufferBackground.bind();
-        this.dynamicColorBufferBackground.upload(renderedBuffer);
+        this.flashesBackgroundBuffer.bind();
+        this.flashesBackgroundBuffer.upload(renderedBuffer);
 
         Color middleColor = Color.getHSBColor(0f, 0f, 0.02f);
         ShaderInstance shaderInstance = ModShaders.FOUNTAIN_MASKED;
@@ -273,7 +273,7 @@ public class DepthsDimensionEffects extends DimensionSpecialEffects {
 
         RenderSystem.setShaderColor(1f, 1f, 1f, 1f);
 
-        this.dynamicColorBufferBackground.drawWithShader(poseStack.last().pose(), projectionMatrix, ModShaders.FOUNTAIN_MASKED);
+        this.flashesBackgroundBuffer.drawWithShader(poseStack.last().pose(), projectionMatrix, ModShaders.FOUNTAIN_MASKED);
 
         VertexBuffer.unbind();
     }
@@ -295,9 +295,9 @@ public class DepthsDimensionEffects extends DimensionSpecialEffects {
             this.addSilhouetteQuad(bufferBuilder, sprite.center, basis, sprite.width, sprite.height);
 
             BufferBuilder.RenderedBuffer renderedBuffer = bufferBuilder.end();
-            this.dynamicTexturedBuffer.bind();
-            this.dynamicTexturedBuffer.upload(renderedBuffer);
-            this.dynamicTexturedBuffer.drawWithShader(poseStack.last().pose(), projectionMatrix, RenderSystem.getShader());
+            this.silhouettesBuffer.bind();
+            this.silhouettesBuffer.upload(renderedBuffer);
+            this.silhouettesBuffer.drawWithShader(poseStack.last().pose(), projectionMatrix, RenderSystem.getShader());
             VertexBuffer.unbind();
         }
     }

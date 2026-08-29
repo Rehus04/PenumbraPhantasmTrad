@@ -441,6 +441,8 @@ public class BlockRegistry {
                     .lightLevel(state -> 15).randomTicks()));
     public static final RegistryObject<LiquidBlock> PURE_DARKNESS = BLOCKS.register("pure_darkness",
             () -> new LiquidBlock(FluidRegistry.SOURCE_PURE_DARKNESS, BlockBehaviour.Properties.copy(Blocks.WATER).noLootTable()));
+    public static final RegistryObject<LiquidBlock> NEGATIVE_PHOTONS = BLOCKS.register("negative_photons",
+            () -> new LiquidBlock(FluidRegistry.SOURCE_NEGATIVE_PHOTONS, BlockBehaviour.Properties.copy(Blocks.WATER).noLootTable()));
 
     //Common
     public static final RegistryObject<Block> GREAT_DOOR_SPAWNER = registerBlock("great_door_spawner",

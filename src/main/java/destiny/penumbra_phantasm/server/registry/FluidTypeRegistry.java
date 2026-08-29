@@ -21,6 +21,8 @@ public class FluidTypeRegistry {
     public static final ResourceLocation PURE_DARKNESS_FLOW = new ResourceLocation(PenumbraPhantasm.MODID, "block/pure_darkness_flow");
     public static final ResourceLocation PURE_DARKNESS_OVERLAY = new ResourceLocation(PenumbraPhantasm.MODID, "misc/pure_darkness_overlay");
 
+    public static final ResourceLocation NEGATIVE_PHOTONS_TEXTURE = new ResourceLocation(PenumbraPhantasm.MODID, "block/negative_photons");
+
     public static final DeferredRegister<FluidType> FLUID_TYPES =
             DeferredRegister.create(ForgeRegistries.Keys.FLUID_TYPES, PenumbraPhantasm.MODID);
 
@@ -38,6 +40,14 @@ public class FluidTypeRegistry {
                     FluidType.Properties.create().lightLevel(15).viscosity(7).density(14).canExtinguish(true)
                             .sound(SoundActions.BUCKET_FILL, SoundEvents.BUCKET_FILL)
                             .sound(SoundActions.BUCKET_EMPTY, SoundEvents.BUCKET_EMPTY)));
+
+    public static final RegistryObject<FluidType> NEGATIVE_PHOTONS = registerFluidType("negative_photons",
+            new LuminescentWaterFluidType(NEGATIVE_PHOTONS_TEXTURE, NEGATIVE_PHOTONS_TEXTURE, NEGATIVE_PHOTONS_TEXTURE, 0xFFFFFFFF,
+                    new Vector3f(21f / 255f, 18f / 255f, 38f / 255f),
+                    FluidType.Properties.create().lightLevel(0).viscosity(7).density(14).canExtinguish(false)
+                            .sound(SoundActions.BUCKET_FILL, SoundEvents.BUCKET_FILL)
+                            .sound(SoundActions.BUCKET_EMPTY, SoundEvents.BUCKET_EMPTY)
+                            .canConvertToSource(false)));
 
     private static RegistryObject<FluidType> registerFluidType(String name, FluidType fluidType) {
         return FLUID_TYPES.register(name, () -> fluidType);
