@@ -5,7 +5,23 @@
   "item.penumbra_phantasm.netherite_knife": "Netherite Knife",
   "item.penumbra_phantasm.real_knife": "§4Real Knife§r",
   "item.penumbra_phantasm.black_knife": "Black Knife",
+
+  "item.penumbra_phantasm.dark_wallet": "Dark Waller",
+  "item.penumbra_phantasm.dark_dollar": "Dark Dollar",
+  "item.penumbra_phantasm.dark_dime": "Dark Dime",
+  "item.penumbra_phantasm.glowshard": "Glowshard",
+
   "item.penumbra_phantasm.dark_candy": "Dark Candy",
+  "item.penumbra_phantasm.choco_diamond": "Choco Diamond",
+  "item.penumbra_phantasm.darkburger": "Darkburger",
+  "item.penumbra_phantasm.double_darkburger": "Double Darkburger",
+  "item.penumbra_phantasm.hearts_donut": "Hearts Donut",
+  "item.penumbra_phantasm.lancer_cookie": "Lancer Cookie",
+
+  "item.penumbra_phantasm.tension_bit": "Tension Bit",
+
+  "item.penumbra_phantasm.door_key": "Door Key",
+
   "item.penumbra_phantasm.friend": "§eITEM_F§r§dRIEND§r",
   "item.penumbra_phantasm.soul_hearth": "SOUL Hearth",
   "item.penumbra_phantasm.fractal_mirror": "Fractal Mirror",
@@ -442,6 +458,24 @@
   "tooltip.penumbra_phantasm.soul_hearth.connection_level": "CONNECTION: ",
   "tooltip.penumbra_phantasm.soul_hearth.not_owner": "THE SOUL WITHIN REJECTS YOU.",
   "tooltip.penumbra_phantasm.rosegold_lighter_fuel": "Fuel: ",
+  "tooltip.penumbra_phantasm.saturation": "SATURATION",
+  "tooltip.penumbra_phantasm.nutrition": "NUTRITION",
+
+  "flavor_text.penumbra_phantasm.dark_candy": "A red-and-black star that tastes like marshmallows.",
+  "flavor_text.penumbra_phantasm.choco_diamond": "It's quite small, but some people REALLY like it.",
+  "flavor_text.penumbra_phantasm.darkburger": "A mysterious black burger made of... Hey, this is just burnt!",
+  "flavor_text.penumbra_phantasm.double_darkburger": "It's the Double-Dark-Burger. It'll take two bites to finish!",
+  "flavor_text.penumbra_phantasm.hearts_donut": "Hearts, don't it!? It's filled with divisive, clotty red jam.",
+  "flavor_text.penumbra_phantasm.lancer_cookie": "A cookie shaped like Lancer's face. Maybe not a cookie.",
+
+  "flavor_text.penumbra_phantasm.tension_bit": "Raises TP by 32% in battle.",
+
+  "flavor_text.penumbra_phantasm.dark_dollar": "A piece of burnt paper with a stamp on it.",
+  "flavor_text.penumbra_phantasm.dark_dime": "A stamped coin covered in soot. Did someone try to burn this?",
+  "flavor_text.penumbra_phantasm.dark_wallet": "A wallet for your live savings. Also horribly burnt.",
+  "flavor_text.penumbra_phantasm.glowshard": "A shimmering shard. Its value increases each Chapter.",
+
+  "flavor_text.penumbra_phantasm.door_key": "The key to a mysterious cell. Something feels strange about it.",
 
   "gui.penumbra_phantasm.dark_world_inventory_title": "INVENTORY",
   "gui.penumbra_phantasm.dark_world_inventory_crafting": "CRAFT",

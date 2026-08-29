@@ -32,6 +32,13 @@ public class CreativeTabRegistry {
                 output.accept(ItemRegistry.REAL_KNIFE.get());
                 output.accept(ItemRegistry.BLACK_KNIFE.get());
 
+                output.accept(ItemRegistry.DARK_WALLET.get());
+                output.accept(ItemRegistry.DARK_DOLLAR.get());
+                output.accept(ItemRegistry.DARK_DIME.get());
+                output.accept(ItemRegistry.GLOWSHARD.get());
+
+                output.accept(ItemRegistry.TENSION_BIT.get());
+
                 output.accept(ItemRegistry.BLACK_SHARD.get());
                 output.accept(ItemRegistry.SHADOW_CRYSTAL.get());
 
@@ -89,6 +96,15 @@ public class CreativeTabRegistry {
                 output.accept(ItemRegistry.LUMINESCENT_WATER_BUCKET.get());
                 output.accept(ItemRegistry.PURE_DARKNESS_BUCKET.get());
 
+                output.accept(ItemRegistry.DARK_CANDY.get());
+                output.accept(ItemRegistry.DARKBURGER.get());
+                output.accept(ItemRegistry.DOUBLE_DARKBURGER.get());
+                output.accept(ItemRegistry.HEARTS_DONUT.get());
+                output.accept(ItemRegistry.CHOCO_DIAMOND.get());
+                output.accept(ItemRegistry.LANCER_COOKIE.get());
+
+                output.accept(ItemRegistry.DOOR_KEY.get());
+
                 output.accept(BlockRegistry.STARTAIL.get());
                 output.accept(BlockRegistry.ECHO_FLOWER.get());
 
@@ -117,7 +133,6 @@ public class CreativeTabRegistry {
                 output.accept(BlockRegistry.SCARLET_PRESSURE_PLATE.get());
                 output.accept(BlockRegistry.SCARLET_LADDER.get());
 
-                output.accept(ItemRegistry.DARK_CANDY.get());
                 output.accept(BlockRegistry.DARK_CANDY_BLOCK.get());
 
                 output.accept(BlockRegistry.DARK_CANDY_SAPLING.get());
