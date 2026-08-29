@@ -6,7 +6,9 @@ import com.mojang.blaze3d.platform.Window;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
 import com.mojang.math.Axis;
+import destiny.penumbra_phantasm.client.render.ModShaders;
 import destiny.penumbra_phantasm.client.render.RenderBlitUtil;
+import destiny.penumbra_phantasm.client.render.RenderTypes;
 import destiny.penumbra_phantasm.client.render.dimension.CardKingdomDimensionEffects;
 import destiny.penumbra_phantasm.client.ClientConfig;
 import destiny.penumbra_phantasm.client.render.GreatDoorRenderUtil;
@@ -21,6 +23,7 @@ import destiny.penumbra_phantasm.server.capability.SoulCapability;
 import destiny.penumbra_phantasm.server.egg_room.CardKingdomEggRoomUtil;
 import destiny.penumbra_phantasm.server.fountain.GreatDoor;
 import destiny.penumbra_phantasm.server.network.ServerBoundEggRoomInteractPacket;
+import destiny.penumbra_phantasm.server.registry.FluidTypeRegistry;
 import destiny.penumbra_phantasm.server.util.DarkWorldUtil;
 import net.minecraft.Util;
 import net.minecraft.client.AttackIndicatorStatus;
@@ -33,6 +36,7 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.ShareToLanScreen;
 import net.minecraft.client.gui.screens.inventory.InventoryScreen;
 import net.minecraft.client.renderer.LevelRenderer;
+import net.minecraft.client.renderer.ShaderInstance;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.util.Mth;
 import net.minecraft.world.MenuProvider;
@@ -46,6 +50,7 @@ import net.minecraft.world.food.FoodData;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
@@ -53,6 +58,7 @@ import net.minecraftforge.client.event.RenderGuiOverlayEvent;
 import net.minecraftforge.client.event.ScreenEvent;
 import net.minecraftforge.client.gui.overlay.NamedGuiOverlay;
 import net.minecraftforge.client.gui.overlay.VanillaGuiOverlay;
+import net.minecraftforge.fluids.FluidStack;
 import org.lwjgl.opengl.GL11;
 import destiny.penumbra_phantasm.PenumbraPhantasm;
 import destiny.penumbra_phantasm.client.render.fountain.FountainRenderUtil;
@@ -87,6 +93,7 @@ import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
+import java.awt.*;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.Random;
@@ -100,6 +107,9 @@ public class ClientEvents {
 	private static final ResourceLocation DARK_WORLD_ICONS = new ResourceLocation(PenumbraPhantasm.MODID, "textures/gui/dark_world/icons_1.png");
 	private static final ResourceLocation DARK_WORLD_HOTBAR = new ResourceLocation(PenumbraPhantasm.MODID, "textures/gui/dark_world/hotbar.png");
 	private static final ResourceLocation DARK_WORLD_HOTBAR_GLOW = new ResourceLocation(PenumbraPhantasm.MODID, "textures/gui/dark_world/hotbar_glow.png");
+
+	public static final ResourceLocation IMAGE_DEPTH = new ResourceLocation(PenumbraPhantasm.MODID, "textures/misc/image_depth.png");
+	public static final ResourceLocation WHITE_SCREEN = new ResourceLocation(PenumbraPhantasm.MODID, "textures/misc/white_screen.png");
 
 	private static int lastHealth = -1;
 	private static int displayHealth = -1;
@@ -210,7 +220,6 @@ public class ClientEvents {
 						}
 						if (renderShockwavePass) {
 							FountainRenderUtil.renderDepthsFountainBeam(fountain, pose, buffer, camera, distance2d);
-							renderNegativePhotonsBlocks();
 						}
 						pose.popPose();
 					} else if (renderSkyPass) {
@@ -276,13 +285,78 @@ public class ClientEvents {
 				}
 			});
 
+			if (renderShockwavePass) {
+				renderNegativePhotonsBlocks(Minecraft.getInstance().level, buffer, camera, pose);
+			}
+
 			buffer.endBatch();
 
 			GL11.glDisable(GL_DEPTH_CLAMP);
 		}
 	}
 
-	private void renderNegativePhotonsBlocks() {
+	private static void renderNegativePhotonsBlocks(ClientLevel level, MultiBufferSource buffer, Camera camera, PoseStack pose) {
+		Color middleColor = Color.getHSBColor(0f, 0f, 0.02f);
+		ShaderInstance shaderInstance = ModShaders.FOUNTAIN_MASKED;
+
+		if (shaderInstance != null) {
+			float shadertime = (level.getGameTime()) * 0.01f;
+			shaderInstance.safeGetUniform("Time").set(shadertime);
+			Minecraft mc = Minecraft.getInstance();
+			float aspect = (float) mc.getWindow().getWidth() /
+					(float) mc.getWindow().getHeight();
+
+			shaderInstance.safeGetUniform("AspectRatio").set(aspect);
+
+		}
+
+		LocalPlayer player = Minecraft.getInstance().player;
+
+		if(player != null) {
+			float middleRed = middleColor.getRed() / 255f;
+			float middleGreen = middleColor.getGreen() / 255f;
+			float middleBlue = middleColor.getBlue() / 255f;
+
+			float tintRed = 1f + (middleRed - 1f);
+			float tintGreen = 1f + (middleGreen - 1f);
+			float tintBlue = 1f + (middleBlue - 1f);
+
+			if (shaderInstance != null) {
+				shaderInstance.safeGetUniform("TintColor").set(
+						tintRed,
+						tintGreen,
+						tintBlue,
+						1f
+				);
+			}
+		}
+
+		VertexConsumer consumer = buffer.getBuffer(RenderTypes.negativePhotons(WHITE_SCREEN, IMAGE_DEPTH, true));
+
+		BlockPos cameraPos = BlockPos.containing(camera.getPosition());
+		int radius = 32;
+		BlockPos.MutableBlockPos currentPos = new BlockPos.MutableBlockPos();
+
+		for (int x = -radius; x <= radius; x++) {
+			for (int y = -radius; y <= radius; y++) {
+				for (int z = -radius; z <= radius; z++) {
+					currentPos.set(cameraPos.getX() + x, cameraPos.getY() + y, cameraPos.getZ() + z);
+
+					ChunkPos chunkPos = new ChunkPos(currentPos);
+					if (!level.hasChunk(chunkPos.x, chunkPos.z)) {
+						continue;
+					}
+
+					FluidState fluidState = level.getFluidState(currentPos);
+					if (fluidState.getFluidType() == FluidTypeRegistry.NEGATIVE_PHOTONS.get()) {
+						renderNegativePhotonsBlock(level, pose, consumer, currentPos.immutable(), fluidState, camera);
+					}
+				}
+			}
+		}
+	}
+
+	private static void renderNegativePhotonsBlock(ClientLevel level, PoseStack pose, VertexConsumer consumer, BlockPos pos, FluidState fluidState, Camera camera) {
 
 	}
 

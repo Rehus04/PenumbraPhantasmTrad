@@ -111,7 +111,7 @@ public class RenderTypes extends RenderType {
             builder.setWriteMaskState(COLOR_WRITE);
 
         return RenderType.create(
-                "fountain_masked_portal",
+                "negative_photons",
                 DefaultVertexFormat.POSITION_COLOR_TEX,
                 VertexFormat.Mode.QUADS,
                 256,
