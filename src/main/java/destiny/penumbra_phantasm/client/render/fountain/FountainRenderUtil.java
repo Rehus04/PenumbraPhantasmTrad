@@ -62,9 +62,11 @@ public class FountainRenderUtil {
 	public static final ResourceLocation DEPTHS_SWIRL = new ResourceLocation(PenumbraPhantasm.MODID, "textures/fountain/depths/fountain_swirl_part.png");
 	public static final ResourceLocation DEPTHS_SWIRL_SMALL = new ResourceLocation(PenumbraPhantasm.MODID, "textures/fountain/depths/fountain_swirl_small_part.png");
 	public static final ResourceLocation DEPTHS_VORTEX = new ResourceLocation(PenumbraPhantasm.MODID, "textures/fountain/depths/fountain_vortex.png");
+	public static final ResourceLocation DEPTHS_VORTEX_LARGER = new ResourceLocation(PenumbraPhantasm.MODID, "textures/fountain/depths/fountain_vortex_larger.png");
 	public static final float DEPTHS_OPENING_PIXELS = 128f;
 	public static final float DEPTHS_SWIRL_PIXELS = 256f;
 	public static final float DEPTHS_VORTEX_PIXELS = 512f;
+	public static final float DEPTHS_LARGER_VORTEX_PIXELS = DEPTHS_VORTEX_PIXELS * 3;
 
 	public static final float DEPTHS_SWIRL_SIZE = 2f;
 
@@ -75,7 +77,8 @@ public class FountainRenderUtil {
 	public static final float DEPTHS_SWIRL_FADE_START = 96f;
 
 	public static final float DEPTHS_VORTEX_Y = 4f;
-	public static final float DEPTHS_VORTEX_DEG_PER_TICK = 6f;
+	public static final float DEPTHS_VORTEX_DEG_PER_TICK = 3f;
+	public static final float DEPTHS_LARGER_VORTEX_DEG_PER_TICK = 1f;
 
 	public static final float DEPTHS_BEAM_TOP_WIDTH = 2f;
 	public static final float DEPTHS_BEAM_BOTTOM_WIDTH = 5f;
@@ -923,6 +926,35 @@ public class FountainRenderUtil {
 
 					renderDepthsHorizontalPlane(poseStack, buffer.getBuffer(RenderTypes.fountainNoCull(DEPTHS_VORTEX)),
 							vortexSize / 16f, 0f, 1f, 1f, 1f, swirlDim);
+
+					poseStack.popPose();
+
+					float largerVortexYaw = (level.getGameTime() + partialTick) * DEPTHS_LARGER_VORTEX_DEG_PER_TICK;
+					float largerVortexSize = DEPTHS_LARGER_VORTEX_PIXELS;
+
+					if (openingTick >= OPENING_SHADOW_DURATION_FULL && openingTick < OPENING_FINISH) {
+						float openingTicks = (fountain.openingTick - OPENING_SHADOW_DURATION_FULL) + partialTick;
+
+						largerVortexYaw = DEPTHS_LARGER_VORTEX_DEG_PER_TICK * ((openingTicks * openingTicks) / (2f * (OPENING_FINISH - OPENING_SHADOW_DURATION_FULL)));
+						largerVortexSize = Mth.lerp((openingTick - OPENING_SHADOW_DURATION_FULL) / (OPENING_FINISH - OPENING_SHADOW_DURATION_FULL), DEPTHS_LARGER_VORTEX_PIXELS * 3, DEPTHS_VORTEX_PIXELS);
+					}
+
+					if (sealingTick >= 0) {
+						float sealingTicks = fountain.sealingTick + partialTick;
+						float sealingStartTime = level.getGameTime() - sealingTick;
+						float vortexYawSealStart = sealingStartTime * DEPTHS_LARGER_VORTEX_DEG_PER_TICK;
+
+						largerVortexYaw = DEPTHS_LARGER_VORTEX_DEG_PER_TICK * (vortexYawSealStart + sealingTicks - (sealingTicks * sealingTicks) / (2f * DEPTHS_FADE_OUT_DURATION));
+						largerVortexSize = Mth.lerp(sealingTicks / DEPTHS_FADE_OUT_DURATION, DEPTHS_LARGER_VORTEX_PIXELS, DEPTHS_LARGER_VORTEX_PIXELS * 3);
+					}
+
+					poseStack.pushPose();
+
+					poseStack.translate(0f, DEPTHS_VORTEX_Y * 2, 0f);
+					poseStack.mulPose(Axis.YP.rotationDegrees(largerVortexYaw));
+
+					renderDepthsHorizontalPlane(poseStack, buffer.getBuffer(RenderTypes.fountainNoCull(DEPTHS_VORTEX_LARGER)),
+							largerVortexSize / 16f, 0f, 1f, 1f, 1f, swirlDim);
 
 					poseStack.popPose();
 				}
