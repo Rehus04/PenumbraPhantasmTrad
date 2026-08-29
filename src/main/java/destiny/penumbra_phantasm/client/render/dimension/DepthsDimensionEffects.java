@@ -95,6 +95,7 @@ public class DepthsDimensionEffects extends DimensionSpecialEffects {
         RenderSystem.setShaderFogStart(CYLINDER_RADIUS * 4F);
         RenderSystem.setShaderFogEnd(CYLINDER_RADIUS * 4.5F);
 
+        this.renderFlashesBackground(level, partialTick, poseStack, projectionMatrix);
         this.renderFlashes(level, partialTick, poseStack, projectionMatrix);
 
         this.createSprites(level);
@@ -179,8 +180,39 @@ public class DepthsDimensionEffects extends DimensionSpecialEffects {
 
         ActiveFlash flash = this.getActiveFlash(level, partialTick);
         if (flash != null) {
+            RenderSystem.setShader(GameRenderer::getPositionColorShader);
+            bufferBuilder.begin(VertexFormat.Mode.TRIANGLES, DefaultVertexFormat.POSITION_COLOR);
+            drawing = true;
+
+            Vec3 flashCenter = new Vec3(Mth.cos(flash.event.azimuth()) * flash.event.radius(), FLASH_Y,
+                    Mth.sin(flash.event.azimuth()) * flash.event.radius()
+            );
+            Basis basis = getUprightBasis(flashCenter);
+            float radius = 16F * FLASH_RADIUS_SCALE;
+            this.addFlashDisc(bufferBuilder, flashCenter, basis, radius, flash.alpha);
+        }
+
+        if (!drawing) {
+            return;
+        }
+
+        BufferBuilder.RenderedBuffer renderedBuffer = bufferBuilder.end();
+        this.dynamicColorBuffer.bind();
+        this.dynamicColorBuffer.upload(renderedBuffer);
+        this.dynamicColorBuffer.drawWithShader(poseStack.last().pose(), projectionMatrix, ModShaders.FOUNTAIN_MASKED);
+
+        VertexBuffer.unbind();
+    }
+
+    private void renderFlashesBackground(ClientLevel level, float partialTick, PoseStack poseStack, Matrix4f projectionMatrix) {
+        Tesselator tesselator = Tesselator.getInstance();
+        BufferBuilder bufferBuilder = tesselator.getBuilder();
+        boolean drawing = false;
+
+        ActiveFlash flash = this.getActiveFlash(level, partialTick);
+        if (flash != null) {
             RenderSystem.setShader(GameRenderer::getPositionColorTexShader);
-            bufferBuilder.begin(VertexFormat.Mode.TRIANGLES, DefaultVertexFormat.POSITION_COLOR_TEX);
+            bufferBuilder.begin(VertexFormat.Mode.TRIANGLES, DefaultVertexFormat.POSITION_COLOR);
             drawing = true;
 
             Vec3 flashCenter = new Vec3(Mth.cos(flash.event.azimuth()) * flash.event.radius(), FLASH_Y,
@@ -240,8 +272,6 @@ public class DepthsDimensionEffects extends DimensionSpecialEffects {
         RenderSystem.setShaderColor(1f, 1f, 1f, 1f);
 
         this.dynamicColorBuffer.drawWithShader(poseStack.last().pose(), projectionMatrix, ModShaders.FOUNTAIN_MASKED);
-
-        this.dynamicColorBuffer.drawWithShader(poseStack.last().pose(), projectionMatrix, RenderSystem.getShader());
 
         VertexBuffer.unbind();
     }
