@@ -76,8 +76,13 @@ public class DarkWorldInventoryMenu extends RecipeBookMenu<CraftingContainer> {
                     return 1;
                 }
 
+                @Override
+                public boolean isActive() {
+                    return false;
+                }
+
                 public boolean mayPlace(ItemStack pStack) {
-                    return pStack.canEquip(equipmentslot, owner);
+                    return false;
                 }
 
                 public boolean mayPickup(Player pPlayer) {
@@ -174,11 +179,6 @@ public class DarkWorldInventoryMenu extends RecipeBookMenu<CraftingContainer> {
                 }
             } else if (pIndex >= 5 && pIndex < 9) {
                 if (!this.moveItemStackTo(itemstack1, 9, 45, false)) {
-                    return ItemStack.EMPTY;
-                }
-            } else if (equipmentslot.getType() == EquipmentSlot.Type.ARMOR && !this.slots.get(8 - equipmentslot.getIndex()).hasItem()) {
-                int i = 8 - equipmentslot.getIndex();
-                if (!this.moveItemStackTo(itemstack1, i, i + 1, false)) {
                     return ItemStack.EMPTY;
                 }
             } else if (equipmentslot == EquipmentSlot.OFFHAND && !this.slots.get(45).hasItem()) {
