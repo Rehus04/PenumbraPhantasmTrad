@@ -190,7 +190,6 @@ public class DarkFountain {
                 }
             } else {
                 if (level instanceof ServerLevel serverLevel) {
-                    ensureDepthsTwin(serverLevel);
                     tickDarkWorldFountainPushing(serverLevel);
                 }
 
@@ -1021,8 +1020,6 @@ public class DarkFountain {
     }
 
     private void tryEnterDepths(ServerPlayer player, ServerLevel darkLevel) {
-        ensureDepthsTwin(darkLevel);
-
         if (this.depthsPos == null) return;
 
         ServerLevel depths = DarkWorldUtil.getDepths(darkLevel.getServer());
@@ -1108,53 +1105,6 @@ public class DarkFountain {
         if (darkFountain != null) {
             darkFountain.depthsTransit.add(player.getUUID());
         }
-    }
-
-    private void ensureDepthsTwin(ServerLevel darkLevel) {
-        if (DarkWorldUtil.isDepths(darkLevel) || !DarkWorldUtil.isDarkWorld(darkLevel)) {
-            return;
-        }
-        ServerLevel depths = DarkWorldUtil.getDepths(darkLevel.getServer());
-        if (depths == null) {
-            return;
-        }
-        if (this.depthsPos != null) {
-            DarkFountain existing = depths.getCapability(CapabilityRegistry.DARK_FOUNTAIN)
-                    .map(cap -> cap.darkFountains.get(this.depthsPos)).orElse(null);
-            if (existing != null) {
-                ChunkPos chunkPos = new ChunkPos(existing.fountainPos);
-                depths.setChunkForced(chunkPos.x, chunkPos.z, true);
-                BlockPos heightmap = depths.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, existing.fountainPos);
-                depths.setChunkForced(chunkPos.x, chunkPos.z, false);
-                int aboveGround = existing.fountainPos.getY() - heightmap.getY();
-                if (aboveGround < DEPTHS_FOUNTAIN_Y_OFFSET) {
-                    BlockPos moved = new BlockPos(existing.fountainPos.getX(),
-                            heightmap.getY() + DEPTHS_FOUNTAIN_Y_OFFSET,
-                            existing.fountainPos.getZ());
-                    depths.getCapability(CapabilityRegistry.DARK_FOUNTAIN).ifPresent(cap -> {
-                        cap.darkFountains.remove(existing.fountainPos);
-                        existing.fountainPos = moved;
-                        cap.darkFountains.put(moved, existing);
-                    });
-                    this.depthsPos = moved;
-                }
-                return;
-            }
-        }
-
-        int depthsX = scaledDepthsX(this.fountainPos.getX());
-        int depthsZ = scaledDepthsZ(this.fountainPos.getZ());
-        Vec2 depthsPos = new Vec2(depthsX, depthsZ);
-        if (isDepthsXzOccupied(depths, depthsPos)) {
-            return;
-        }
-
-        BlockPos pos = getHeightmappedDepthsPos(depths, new Vec2(scaledDepthsX(fountainPos.getX()), scaledDepthsZ(fountainPos.getZ())));
-        depths.getCapability(CapabilityRegistry.DARK_FOUNTAIN).ifPresent(cap -> {
-            cap.addDarkFountain(pos, depths.dimension(), this.fountainPos, darkLevel.dimension(),
-                    -1, 0, 0, 0, new HashSet<>(), new ArrayList<>(), -1, -1, 0);
-        });
-        this.depthsPos = pos;
     }
 
     private void removeDepthsTwin(ServerLevel darkLevel) {

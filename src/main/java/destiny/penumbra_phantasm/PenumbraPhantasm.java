@@ -16,7 +16,7 @@ import destiny.penumbra_phantasm.client.render.particle.*;
 import destiny.penumbra_phantasm.client.render.screen.CheshireChestScreen;
 import destiny.penumbra_phantasm.client.render.screen.DarkCandyCraftingTableScreen;
 import destiny.penumbra_phantasm.client.render.screen.UmbrastoneFurnaceScreen;
-import destiny.penumbra_phantasm.client.tooltip.DarkMoneyTooltipComponent;
+import destiny.penumbra_phantasm.client.render.tooltip.DarkMoneyTooltipComponent;
 import destiny.penumbra_phantasm.server.datapack.*;
 import destiny.penumbra_phantasm.server.item.property.DarkWalletItemProperty;
 import destiny.penumbra_phantasm.server.item.property.RosegoldLighterItemProperty;

@@ -4,9 +4,15 @@ import destiny.penumbra_phantasm.PenumbraPhantasm;
 import destiny.penumbra_phantasm.server.registry.ItemRegistry;
 import net.minecraft.ChatFormatting;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.Style;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.stats.Stats;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.SlotAccess;
 import net.minecraft.world.entity.player.Player;
@@ -40,14 +46,52 @@ public class DarkWallerItem extends FlavorTooltipItem
 		int dimes = pStack.getTag().getInt(DIMES);
 		int dimeDollars = dimes / 10;
 
-		int totalMoney = dollars * 10;
-		totalMoney = totalMoney + dimeDollars;
+		int totalMoney = dollars + dimeDollars;
 
 		if (totalMoney > 0) {
 			components.add(Component.translatable("tooltip.penumbra_phantasm.dark_wallet.total_money")
 					.append(Component.literal("" + totalMoney))
 					.withStyle(Style.EMPTY.withFont(new ResourceLocation(PenumbraPhantasm.MODID, "8_bit_operator"))));
 		}
+	}
+
+	@Override
+	public InteractionResultHolder<ItemStack> use(Level pLevel, Player pPlayer, InteractionHand pUsedHand) {
+		ItemStack itemstack = pPlayer.getItemInHand(pUsedHand);
+
+		if (dropContents(itemstack, pPlayer)) {
+			this.playDropContentsSound(pPlayer);
+
+			pPlayer.awardStat(Stats.ITEM_USED.get(this));
+
+			return InteractionResultHolder.sidedSuccess(itemstack, pLevel.isClientSide());
+		} else {
+			return InteractionResultHolder.fail(itemstack);
+		}
+	}
+
+	private static boolean dropContents(ItemStack pStack, Player pPlayer) {
+		if (pStack.getTag() == null) return false;
+
+		if (pPlayer instanceof ServerPlayer) {
+			int dollars = pStack.getTag().getInt(DOLLARS);
+			int dimes = pStack.getTag().getInt(DIMES);
+
+			if (dimes <= 0 && dollars <= 0) return false;
+
+			if (dollars > 0) {
+				ItemStack dollarStack = new ItemStack(ItemRegistry.DARK_DOLLAR.get(), dollars);
+				pPlayer.drop(dollarStack, true);
+				pStack.getTag().putInt(DOLLARS, 0);
+			}
+			if (dimes > 0) {
+				ItemStack dimeStack = new ItemStack(ItemRegistry.DARK_DIME.get(), dimes);
+				pPlayer.drop(dimeStack, true);
+				pStack.getTag().putInt(DIMES, 0);
+			}
+		}
+
+		return true;
 	}
 
 		@Override
@@ -76,36 +120,45 @@ public class DarkWallerItem extends FlavorTooltipItem
 
 		if(otherStack.isEmpty())
 		{
-			int dollars = stack.getTag().getInt(DOLLARS);
+			int dimes = stack.getTag().getInt(DIMES);
 
-			if(action.equals(ClickAction.SECONDARY) && stack.getTag().getBoolean(SHIFTING) || action.equals(ClickAction.SECONDARY) && dollars <= 0)
+			if((action.equals(ClickAction.SECONDARY) && stack.getTag().getBoolean(SHIFTING)) || (action.equals(ClickAction.SECONDARY) && dimes <= 0))
 			{
-				stack.getTag().putBoolean(SHIFTING, false);
-				int dimes = stack.getTag().getInt(DIMES);
-				int dimesStackSize = Math.min(dimes, 64);
-				stack.getTag().putInt(DIMES, dimes-dimesStackSize);
-				player.containerMenu.setCarried(new ItemStack(ItemRegistry.DARK_DIME.get(),
-						dimesStackSize));
-				return true;
-			}
-			else if(action.equals(ClickAction.SECONDARY))
-			{
+				int dollars = stack.getTag().getInt(DOLLARS);
 				int dollarStackSize = Math.min(dollars, 64);
 				stack.getTag().putInt(DOLLARS, dollars-dollarStackSize);
 				player.containerMenu.setCarried(new ItemStack(ItemRegistry.DARK_DOLLAR.get(),
 						dollarStackSize));
+				this.playRemoveOneSound(player);
+				return true;
+			}
+			else if(action.equals(ClickAction.SECONDARY))
+			{
+				stack.getTag().putBoolean(SHIFTING, false);
+				int dimesStackSize = Math.min(dimes, 64);
+				stack.getTag().putInt(DIMES, dimes-dimesStackSize);
+				player.containerMenu.setCarried(new ItemStack(ItemRegistry.DARK_DIME.get(),
+						dimesStackSize));
+				this.playRemoveOneSound(player);
 				return true;
 			}
 		}
-		else
-		{
-			if(otherStack.is(ItemRegistry.DARK_DOLLAR.get()))
-				stack.getTag().putInt(DOLLARS, stack.getTag().getInt(DOLLARS)+otherStack.getCount());
-			if(otherStack.is(ItemRegistry.DARK_DIME.get()))
-				stack.getTag().putInt(DIMES, stack.getTag().getInt(DIMES)+otherStack.getCount());
+		else {
+			if (otherStack.is(ItemRegistry.DARK_DOLLAR.get())) {
+				stack.getTag().putInt(DOLLARS, stack.getTag().getInt(DOLLARS) + otherStack.getCount());
+				this.playInsertSound(player);
 
-			otherStack.setCount(0);
-			return true;
+				otherStack.setCount(0);
+				return true;
+			}
+
+			if (otherStack.is(ItemRegistry.DARK_DIME.get())) {
+				stack.getTag().putInt(DIMES, stack.getTag().getInt(DIMES) + otherStack.getCount());
+				this.playInsertSound(player);
+
+				otherStack.setCount(0);
+				return true;
+			}
 		}
 
 		return false;
@@ -136,5 +189,17 @@ public class DarkWallerItem extends FlavorTooltipItem
 			return true;
 		}
 		return false;
+	}
+
+	private void playRemoveOneSound(Entity pEntity) {
+		pEntity.playSound(SoundEvents.BUNDLE_REMOVE_ONE, 0.8F, 0.8F + pEntity.level().getRandom().nextFloat() * 0.4F);
+	}
+
+	private void playInsertSound(Entity pEntity) {
+		pEntity.playSound(SoundEvents.BUNDLE_INSERT, 0.8F, 0.8F + pEntity.level().getRandom().nextFloat() * 0.4F);
+	}
+
+	private void playDropContentsSound(Entity pEntity) {
+		pEntity.playSound(SoundEvents.BUNDLE_DROP_CONTENTS, 0.8F, 0.8F + pEntity.level().getRandom().nextFloat() * 0.4F);
 	}
 }

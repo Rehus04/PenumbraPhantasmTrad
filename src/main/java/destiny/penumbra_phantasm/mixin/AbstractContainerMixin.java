@@ -1,6 +1,7 @@
 package destiny.penumbra_phantasm.mixin;
 
 import com.llamalad7.mixinextras.sugar.Local;
+import destiny.penumbra_phantasm.server.item.DarkWallerItem;
 import destiny.penumbra_phantasm.server.registry.ItemRegistry;
 import net.minecraft.core.NonNullList;
 import net.minecraft.world.entity.player.Player;
@@ -32,7 +33,7 @@ public class AbstractContainerMixin
 
 		if(pClickType == ClickType.QUICK_MOVE && button == 1 && carried.isEmpty() && slotStack.is(ItemRegistry.DARK_WALLET.get()))
 		{
-			slotStack.getOrCreateTag().putBoolean("shifting", true);
+			slotStack.getOrCreateTag().putBoolean(DarkWallerItem.SHIFTING, true);
 			return ClickType.PICKUP;
 		}
 		else return pClickType;

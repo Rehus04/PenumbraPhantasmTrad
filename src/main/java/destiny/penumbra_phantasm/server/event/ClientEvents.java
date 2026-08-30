@@ -19,7 +19,7 @@ import destiny.penumbra_phantasm.client.render.screen.EggRoomCoverScreen;
 import destiny.penumbra_phantasm.client.render.screen.IntroScreen;
 import destiny.penumbra_phantasm.client.KeyBindings;
 import destiny.penumbra_phantasm.client.render.textbox.DarkWorldDialogue;
-import destiny.penumbra_phantasm.client.tooltip.DarkMoneyTooltipComponent;
+import destiny.penumbra_phantasm.client.render.tooltip.DarkMoneyTooltipComponent;
 import destiny.penumbra_phantasm.server.capability.SoulCapability;
 import destiny.penumbra_phantasm.server.egg_room.CardKingdomEggRoomUtil;
 import destiny.penumbra_phantasm.server.fountain.GreatDoor;
