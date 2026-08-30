@@ -12,6 +12,9 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Mth;
+import net.minecraft.world.effect.MobEffect;
+import net.minecraft.world.effect.MobEffectCategory;
+import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -22,6 +25,8 @@ import net.minecraftforge.fluids.FluidType;
 import net.minecraftforge.network.PacketDistributor;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 //TODO:
@@ -101,6 +106,22 @@ public class SoulCapability implements INBTSerializable<CompoundTag> {
                     }
                 }
             } else {
+                //Remove all potentially beneficial effects so players suffer
+                List<MobEffect> effectsToRemove = new ArrayList<>();
+                for (MobEffectInstance effect : player.getActiveEffects()) {
+                    MobEffectCategory category = effect.getEffect().getCategory();
+
+                    if (category == MobEffectCategory.BENEFICIAL || category == MobEffectCategory.NEUTRAL) {
+                        effectsToRemove.add(effect.getEffect());
+                    }
+                }
+                for (MobEffect mobEffect : effectsToRemove) {
+                    player.removeEffect(mobEffect);
+                }
+
+                //Remove saturation so players suffer even more
+                player.getFoodData().setSaturation(0f);
+
                 if (level.getGameTime() % 60 == 0) {
                     player.hurt(DamageTypeRegistry.getSimpleDamageSource(level, DamageTypeRegistry.EROSION), 6);
                 }
