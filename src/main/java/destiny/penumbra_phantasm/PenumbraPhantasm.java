@@ -18,6 +18,7 @@ import destiny.penumbra_phantasm.client.render.screen.DarkCandyCraftingTableScre
 import destiny.penumbra_phantasm.client.render.screen.UmbrastoneFurnaceScreen;
 import destiny.penumbra_phantasm.client.tooltip.DarkMoneyTooltipComponent;
 import destiny.penumbra_phantasm.server.datapack.*;
+import destiny.penumbra_phantasm.server.item.property.DarkWalletItemProperty;
 import destiny.penumbra_phantasm.server.item.property.RosegoldLighterItemProperty;
 import destiny.penumbra_phantasm.server.registry.*;
 import destiny.penumbra_phantasm.client.render.model.item.DeltashieldModel;
@@ -203,6 +204,7 @@ public class PenumbraPhantasm {
                     return entity != null && entity.isUsingItem() && entity.getUseItem() == stack ? 1F : 0F;
                 });
                 ItemProperties.register(ItemRegistry.ROSEGOLD_LIGHTER.get(), new ResourceLocation(MODID, "open"), new RosegoldLighterItemProperty());
+                ItemProperties.register(ItemRegistry.DARK_WALLET.get(), new ResourceLocation(MODID, "money"), new DarkWalletItemProperty());
 
                 MenuScreens.register(MenuRegistry.DARK_CANDY_CRAFTING_TABLE.get(), DarkCandyCraftingTableScreen::new);
                 MenuScreens.register(MenuRegistry.UMBRASTONE_FURNACE_MENU.get(), UmbrastoneFurnaceScreen::new);

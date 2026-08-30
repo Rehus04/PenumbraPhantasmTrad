@@ -3,7 +3,6 @@ package destiny.penumbra_phantasm.client.tooltip;
 import com.mojang.blaze3d.vertex.PoseStack;
 import destiny.penumbra_phantasm.PenumbraPhantasm;
 import destiny.penumbra_phantasm.server.registry.ItemRegistry;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
@@ -48,7 +47,6 @@ public class DarkMoneyTooltipComponent implements ClientTooltipComponent, Toolti
 	public void renderImage(Font font, int pX, int pY, GuiGraphics graphics)
 	{
 		final PoseStack pose = graphics.pose();
-		Minecraft minecraft = Minecraft.getInstance();
 
 		pose.pushPose();
 		if(dollars != 0)

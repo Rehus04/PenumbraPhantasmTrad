@@ -23,6 +23,7 @@ import destiny.penumbra_phantasm.client.tooltip.DarkMoneyTooltipComponent;
 import destiny.penumbra_phantasm.server.capability.SoulCapability;
 import destiny.penumbra_phantasm.server.egg_room.CardKingdomEggRoomUtil;
 import destiny.penumbra_phantasm.server.fountain.GreatDoor;
+import destiny.penumbra_phantasm.server.item.DarkWallerItem;
 import destiny.penumbra_phantasm.server.network.ServerBoundEggRoomInteractPacket;
 import destiny.penumbra_phantasm.server.registry.FluidTypeRegistry;
 import destiny.penumbra_phantasm.server.registry.ItemRegistry;
@@ -39,7 +40,6 @@ import net.minecraft.client.gui.screens.ShareToLanScreen;
 import net.minecraft.client.gui.screens.inventory.InventoryScreen;
 import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.core.SectionPos;
-import net.minecraft.network.chat.FormattedText;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.util.Mth;
 import net.minecraft.world.MenuProvider;
@@ -50,7 +50,6 @@ import net.minecraft.world.entity.PlayerRideableJumping;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.food.FoodData;
-import net.minecraft.world.inventory.tooltip.TooltipComponent;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.Level;
@@ -1231,7 +1230,7 @@ public class ClientEvents
 	}
 
 	@SubscribeEvent
-	public static void aspectTooltip(RenderTooltipEvent.GatherComponents event)
+	public static void renderTooltipEvent(RenderTooltipEvent.GatherComponents event)
 	{
 		ItemStack stack = event.getItemStack();
 		if(stack.is(ItemRegistry.DARK_WALLET.get()))
@@ -1239,8 +1238,8 @@ public class ClientEvents
 			int dollars = 0, dimes = 0;
 			if(stack.getTag() != null)
 			{
-				dollars = stack.getTag().getInt("dollars");
-				dimes = stack.getTag().getInt("dimes");
+				dollars = stack.getTag().getInt(DarkWallerItem.DOLLARS);
+				dimes = stack.getTag().getInt(DarkWallerItem.DIMES);
 			}
 			event.getTooltipElements().add(3, Either.right(new DarkMoneyTooltipComponent(dollars, dimes)));
 		}
