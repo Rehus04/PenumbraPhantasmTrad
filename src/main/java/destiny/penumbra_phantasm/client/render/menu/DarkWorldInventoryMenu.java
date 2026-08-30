@@ -66,7 +66,7 @@ public class DarkWorldInventoryMenu extends RecipeBookMenu<CraftingContainer> {
 
         for (int k = 0; k < 4; ++k) {
             final EquipmentSlot equipmentslot = SLOT_IDS[k];
-            this.addSlot(new Slot(pPlayerInventory, 39 - k, ARMOR_SLOTS_X, ARMOR_SLOTS_Y + k * 18) {
+            this.addSlot(new Slot(pPlayerInventory, 39 - k, -2000, -2000) {
                 public void setByPlayer(ItemStack pStack) {
                     DarkWorldInventoryMenu.onEquipItem(pOwner, equipmentslot, pStack, this.getItem());
                     super.setByPlayer(pStack);
@@ -118,6 +118,11 @@ public class DarkWorldInventoryMenu extends RecipeBookMenu<CraftingContainer> {
         });
     }
 
+    @Override
+    public boolean canDragTo(Slot slot) {
+        return !isHiddenArmorSlot(slot.index);
+    }
+
     static void onEquipItem(Player pPlayer, EquipmentSlot pSlot, ItemStack pNewItem, ItemStack pOldItem) {
         Equipable equipable = Equipable.get(pNewItem);
         if (equipable != null) {
@@ -146,6 +151,13 @@ public class DarkWorldInventoryMenu extends RecipeBookMenu<CraftingContainer> {
 
     public void slotsChanged(Container pInventory) {
         slotChangedCraftingGrid(this, this.owner.level(), this.owner, this.craftSlots, this.resultSlots);
+    }
+
+    @Override
+    public void clicked(int pSlotId, int pButton, ClickType pClickType, Player pPlayer) {
+        if (isHiddenArmorSlot(pSlotId)) return;
+
+        super.clicked(pSlotId, pButton, pClickType, pPlayer);
     }
 
     public void removed(Player pPlayer) {
@@ -218,6 +230,10 @@ public class DarkWorldInventoryMenu extends RecipeBookMenu<CraftingContainer> {
 
     public boolean canTakeItemForPickAll(ItemStack pStack, Slot pSlot) {
         return pSlot.container != this.resultSlots && super.canTakeItemForPickAll(pStack, pSlot);
+    }
+
+    public static boolean isHiddenArmorSlot(int menuSlotIndex) {
+        return menuSlotIndex >= 5 && menuSlotIndex < 9;
     }
 
     public int getResultSlotIndex() {

@@ -7,6 +7,7 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.datafixers.util.Pair;
 import destiny.penumbra_phantasm.PenumbraPhantasm;
 import destiny.penumbra_phantasm.client.render.RenderBlitUtil;
+import destiny.penumbra_phantasm.client.render.menu.DarkWorldInventoryMenu;
 import destiny.penumbra_phantasm.client.render.screen.component.DarkWorldButton;
 import destiny.penumbra_phantasm.server.util.DarkWorldUtil;
 import net.minecraft.ChatFormatting;
@@ -175,6 +176,8 @@ public class DarkWorldCreativeModeInventoryScreen extends EffectRenderingInvento
             if (pSlot != null && !pSlot.mayPickup(this.minecraft.player)) {
                 return;
             }
+
+            if (pSlot instanceof SlotWrapper wrapper && DarkWorldInventoryMenu.isHiddenArmorSlot(wrapper.target.index)) return;
 
             if (pSlot == this.destroyItemSlot && flag) {
                 for(int j = 0; j < this.minecraft.player.inventoryMenu.getItems().size(); ++j) {
@@ -1089,7 +1092,12 @@ public class DarkWorldCreativeModeInventoryScreen extends EffectRenderingInvento
             return this.target.remove(pAmount);
         }
 
+        @Override
         public boolean isActive() {
+            if (DarkWorldInventoryMenu.isHiddenArmorSlot(this.target.index)) {
+                return false;
+            }
+
             return this.target.isActive();
         }
 
