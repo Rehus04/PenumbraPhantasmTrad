@@ -1,6 +1,6 @@
 package destiny.penumbra_phantasm.server.block;
 
-import destiny.penumbra_phantasm.client.render.screen.GenericCraftingMenu;
+import destiny.penumbra_phantasm.client.render.menu.GenericCraftingMenu;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.MenuProvider;

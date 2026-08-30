@@ -1,4 +1,4 @@
-package destiny.penumbra_phantasm.client.render.screen;
+package destiny.penumbra_phantasm.client.render.menu;
 
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;

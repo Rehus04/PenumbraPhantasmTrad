@@ -1,9 +1,8 @@
-package destiny.penumbra_phantasm.client.render.screen;
+package destiny.penumbra_phantasm.client.render.menu;
 
 import com.mojang.datafixers.util.Pair;
 
 import java.util.List;
-import java.util.Optional;
 
 import destiny.penumbra_phantasm.server.util.DarkWorldUtil;
 import net.minecraft.network.protocol.game.ClientboundContainerSetSlotPacket;
@@ -65,7 +64,7 @@ public class DarkWorldInventoryMenu extends RecipeBookMenu<CraftingContainer> {
             }
         }
 
-/*        for (int k = 0; k < 4; ++k) {
+        for (int k = 0; k < 4; ++k) {
             final EquipmentSlot equipmentslot = SLOT_IDS[k];
             this.addSlot(new Slot(pPlayerInventory, 39 - k, ARMOR_SLOTS_X, ARMOR_SLOTS_Y + k * 18) {
                 public void setByPlayer(ItemStack pStack) {
@@ -90,7 +89,7 @@ public class DarkWorldInventoryMenu extends RecipeBookMenu<CraftingContainer> {
                     return Pair.of(InventoryMenu.BLOCK_ATLAS, TEXTURE_EMPTY_SLOTS[equipmentslot.getIndex()]);
                 }
             });
-        }*/
+        }
 
         for (int l = 0; l < 3; ++l) {
             for (int j1 = 0; j1 < 9; ++j1) {

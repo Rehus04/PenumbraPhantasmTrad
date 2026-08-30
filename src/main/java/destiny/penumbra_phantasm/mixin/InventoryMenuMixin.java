@@ -1,6 +1,6 @@
 package destiny.penumbra_phantasm.mixin;
 
-import destiny.penumbra_phantasm.client.render.screen.DarkWorldInventoryMenu;
+import destiny.penumbra_phantasm.client.render.menu.DarkWorldInventoryMenu;
 import destiny.penumbra_phantasm.server.util.DarkWorldUtil;
 import net.minecraft.world.Container;
 import net.minecraft.world.entity.player.Player;
