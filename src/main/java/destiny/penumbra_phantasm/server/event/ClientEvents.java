@@ -12,6 +12,7 @@ import destiny.penumbra_phantasm.client.render.RenderTypes;
 import destiny.penumbra_phantasm.client.render.dimension.CardKingdomDimensionEffects;
 import destiny.penumbra_phantasm.client.ClientConfig;
 import destiny.penumbra_phantasm.client.render.GreatDoorRenderUtil;
+import destiny.penumbra_phantasm.client.render.fluid.NegativePhotonsRenderUtil;
 import destiny.penumbra_phantasm.client.render.screen.DarkWorldInventoryScreen;
 import destiny.penumbra_phantasm.client.render.screen.DarkWorldLanScreen;
 import destiny.penumbra_phantasm.client.render.screen.DarkWorldPauseScreen;
@@ -107,9 +108,6 @@ public class ClientEvents {
 	private static final ResourceLocation DARK_WORLD_ICONS = new ResourceLocation(PenumbraPhantasm.MODID, "textures/gui/dark_world/icons_1.png");
 	private static final ResourceLocation DARK_WORLD_HOTBAR = new ResourceLocation(PenumbraPhantasm.MODID, "textures/gui/dark_world/hotbar.png");
 	private static final ResourceLocation DARK_WORLD_HOTBAR_GLOW = new ResourceLocation(PenumbraPhantasm.MODID, "textures/gui/dark_world/hotbar_glow.png");
-
-	public static final ResourceLocation IMAGE_DEPTH = new ResourceLocation(PenumbraPhantasm.MODID, "textures/misc/image_depth.png");
-	public static final ResourceLocation WHITE_SCREEN = new ResourceLocation(PenumbraPhantasm.MODID, "textures/misc/white_screen.png");
 
 	private static int lastHealth = -1;
 	private static int displayHealth = -1;
@@ -286,78 +284,13 @@ public class ClientEvents {
 			});
 
 			if (renderShockwavePass) {
-				renderNegativePhotonsBlocks(Minecraft.getInstance().level, buffer, camera, pose);
+				NegativePhotonsRenderUtil.renderNegativePhotonsBlocks(Minecraft.getInstance().level, buffer, camera, pose);
 			}
 
 			buffer.endBatch();
 
 			GL11.glDisable(GL_DEPTH_CLAMP);
 		}
-	}
-
-	private static void renderNegativePhotonsBlocks(ClientLevel level, MultiBufferSource buffer, Camera camera, PoseStack pose) {
-		Color middleColor = Color.getHSBColor(0f, 0f, 0.02f);
-		ShaderInstance shaderInstance = ModShaders.FOUNTAIN_MASKED;
-
-		if (shaderInstance != null) {
-			float shadertime = (level.getGameTime()) * 0.01f;
-			shaderInstance.safeGetUniform("Time").set(shadertime);
-			Minecraft mc = Minecraft.getInstance();
-			float aspect = (float) mc.getWindow().getWidth() /
-					(float) mc.getWindow().getHeight();
-
-			shaderInstance.safeGetUniform("AspectRatio").set(aspect);
-
-		}
-
-		LocalPlayer player = Minecraft.getInstance().player;
-
-		if(player != null) {
-			float middleRed = middleColor.getRed() / 255f;
-			float middleGreen = middleColor.getGreen() / 255f;
-			float middleBlue = middleColor.getBlue() / 255f;
-
-			float tintRed = 1f + (middleRed - 1f);
-			float tintGreen = 1f + (middleGreen - 1f);
-			float tintBlue = 1f + (middleBlue - 1f);
-
-			if (shaderInstance != null) {
-				shaderInstance.safeGetUniform("TintColor").set(
-						tintRed,
-						tintGreen,
-						tintBlue,
-						1f
-				);
-			}
-		}
-
-		VertexConsumer consumer = buffer.getBuffer(RenderTypes.negativePhotons(WHITE_SCREEN, IMAGE_DEPTH, true));
-
-		BlockPos cameraPos = BlockPos.containing(camera.getPosition());
-		int radius = 32;
-		BlockPos.MutableBlockPos currentPos = new BlockPos.MutableBlockPos();
-
-		for (int x = -radius; x <= radius; x++) {
-			for (int y = -radius; y <= radius; y++) {
-				for (int z = -radius; z <= radius; z++) {
-					currentPos.set(cameraPos.getX() + x, cameraPos.getY() + y, cameraPos.getZ() + z);
-
-					ChunkPos chunkPos = new ChunkPos(currentPos);
-					if (!level.hasChunk(chunkPos.x, chunkPos.z)) {
-						continue;
-					}
-
-					FluidState fluidState = level.getFluidState(currentPos);
-					if (fluidState.getFluidType() == FluidTypeRegistry.NEGATIVE_PHOTONS.get()) {
-						renderNegativePhotonsBlock(level, pose, consumer, currentPos.immutable(), fluidState, camera);
-					}
-				}
-			}
-		}
-	}
-
-	private static void renderNegativePhotonsBlock(ClientLevel level, PoseStack pose, VertexConsumer consumer, BlockPos pos, FluidState fluidState, Camera camera) {
-
 	}
 
 	@SubscribeEvent
