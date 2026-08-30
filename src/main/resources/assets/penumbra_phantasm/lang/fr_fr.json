@@ -39,10 +39,11 @@
 
   "item.penumbra_phantasm.ichor": "Ichor",
   
+  "item.penumbra_phantasm.dark_candy_stick": "Bâton en bonbombre",
   "item.penumbra_phantasm.dark_candy_bucket": "Seau en bonbombre",
   "item.penumbra_phantasm.luminescent_water_bucket": "Seau d'eau luminescente",
   "item.penumbra_phantasm.pure_darkness_bucket": "Seau de pure obscurité",
-  "item.penumbra_phantasm.dark_candy_stick": "Bâton en bonbombre",
+  "item.penumbra_phantasm.negative_photons_bucket": "Seau de §8PHOTONS NÉGATIFS§r ",
   
   "item.penumbra_phantasm.dark_candy_sword": "Épée en bonbombre",
   "item.penumbra_phantasm.dark_candy_pickaxe": "Pioche en bonbombre",
@@ -372,6 +373,7 @@
 
   "liquid.penumbra_phantasm.pure_darkness": "Pure obscurité",
   "liquid.penumbra_phantasm.luminescent_water": "Eau luminescente",
+  "liquid.penumbra_phantasm.negative_photons": "§8PHOTONS NÉGATIFS§r",
 
   "itemGroup.penumbra_phantasm.main": "PENUMBRA PHANTASM",
   "itemGroup.penumbra_phantasm.card_kingdom": "ROYAUME DES CARTES",
