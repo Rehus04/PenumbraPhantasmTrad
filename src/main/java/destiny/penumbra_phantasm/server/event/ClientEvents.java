@@ -6,9 +6,7 @@ import com.mojang.blaze3d.platform.Window;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
 import com.mojang.math.Axis;
-import destiny.penumbra_phantasm.client.render.ModShaders;
 import destiny.penumbra_phantasm.client.render.RenderBlitUtil;
-import destiny.penumbra_phantasm.client.render.RenderTypes;
 import destiny.penumbra_phantasm.client.render.dimension.CardKingdomDimensionEffects;
 import destiny.penumbra_phantasm.client.ClientConfig;
 import destiny.penumbra_phantasm.client.render.GreatDoorRenderUtil;
@@ -37,7 +35,7 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.ShareToLanScreen;
 import net.minecraft.client.gui.screens.inventory.InventoryScreen;
 import net.minecraft.client.renderer.LevelRenderer;
-import net.minecraft.client.renderer.ShaderInstance;
+import net.minecraft.core.SectionPos;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.util.Mth;
 import net.minecraft.world.MenuProvider;
@@ -51,6 +49,8 @@ import net.minecraft.world.food.FoodData;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.chunk.ChunkAccess;
+import net.minecraft.world.level.chunk.LevelChunkSection;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
@@ -59,7 +59,6 @@ import net.minecraftforge.client.event.RenderGuiOverlayEvent;
 import net.minecraftforge.client.event.ScreenEvent;
 import net.minecraftforge.client.gui.overlay.NamedGuiOverlay;
 import net.minecraftforge.client.gui.overlay.VanillaGuiOverlay;
-import net.minecraftforge.fluids.FluidStack;
 import org.lwjgl.opengl.GL11;
 import destiny.penumbra_phantasm.PenumbraPhantasm;
 import destiny.penumbra_phantasm.client.render.fountain.FountainRenderUtil;
@@ -67,7 +66,6 @@ import destiny.penumbra_phantasm.client.render.fountain.DepthsFountainSwirls;
 import destiny.penumbra_phantasm.client.sound.MusicManager;
 import destiny.penumbra_phantasm.server.fountain.DarkFountain;
 import destiny.penumbra_phantasm.server.capability.DarkFountainCapability;
-import destiny.penumbra_phantasm.server.network.ServerBoundTextBoxChoicePacket;
 import destiny.penumbra_phantasm.server.registry.CapabilityRegistry;
 import destiny.penumbra_phantasm.server.registry.PacketHandlerRegistry;
 import net.minecraft.client.Camera;
@@ -94,10 +92,7 @@ import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
-import java.awt.*;
-import java.util.ArrayList;
-import java.util.Map;
-import java.util.Random;
+import java.util.*;
 
 import static org.lwjgl.opengl.GL32C.GL_DEPTH_CLAMP;
 
@@ -116,6 +111,8 @@ public class ClientEvents {
 	private static final Random random = new Random();
 	private static ResourceKey<Level> lastClientDim;
 	private static int eggRoomRebuildLeft;
+
+	public static Map<ChunkPos, Set<BlockPos>> negativePhotons = new HashMap<>();
 
 	@SubscribeEvent(priority = EventPriority.LOWEST)
 	public static void eggRoomCameraAngles(ViewportEvent.ComputeCameraAngles event) {
@@ -284,7 +281,7 @@ public class ClientEvents {
 			});
 
 			if (renderShockwavePass) {
-				NegativePhotonsRenderUtil.renderNegativePhotonsBlocks(Minecraft.getInstance().level, buffer, camera, pose);
+				NegativePhotonsRenderUtil.renderNegativePhotonsBlocks(Minecraft.getInstance().level, buffer, camera, pose, negativePhotons);
 			}
 
 			buffer.endBatch();
@@ -294,20 +291,63 @@ public class ClientEvents {
 	}
 
 	@SubscribeEvent
-	public static void eggRoomChunkLoad(ChunkEvent.Load event) {
-		if (!event.getLevel().isClientSide()) {
-			return;
+	public static void onChunkLoad(ChunkEvent.Load event) {
+		if (!event.getLevel().isClientSide()) return;
+		if (!(event.getLevel() instanceof ClientLevel level)) return;
+
+		ChunkAccess chunk = event.getChunk();
+		if (chunk == null) return;
+
+		ChunkPos chunkPos = chunk.getPos();
+		int chunkMinX = chunkPos.getMinBlockX();
+		int chunkMinZ = chunkPos.getMinBlockZ();
+
+		Set<BlockPos> negativePhotonsSet = new HashSet<>();
+        for (int sectionIndex = 0; sectionIndex < chunk.getSectionsCount(); sectionIndex++) {
+            LevelChunkSection section = chunk.getSection(sectionIndex);
+
+            if (section.hasOnlyAir()) continue;
+            if (!section.maybeHas(state -> state.getFluidState().getFluidType() == FluidTypeRegistry.NEGATIVE_PHOTONS.get())) continue;
+
+			int sectionChunkY = chunk.getSectionIndexFromSectionY(sectionIndex);
+			int sectionMinY = SectionPos.sectionToBlockCoord(sectionChunkY);
+
+			for (int sectionX = 0; sectionX < 16; sectionX++) {
+				for (int sectionY = 0; sectionY < 16; sectionY++) {
+					for (int sectionZ = 0; sectionZ < 16; sectionZ++) {
+						FluidState fluidState = section.getFluidState(sectionX, sectionY, sectionZ);
+
+						if (fluidState.getFluidType() != FluidTypeRegistry.NEGATIVE_PHOTONS.get()) continue;
+
+						BlockPos negativePhotonsPos = new BlockPos(chunkMinX + sectionX, sectionMinY + sectionY, chunkMinZ + sectionZ);
+						negativePhotonsSet.add(negativePhotonsPos);
+					}
+				}
+			}
+        }
+
+		negativePhotons.put(chunkPos, negativePhotonsSet);
+
+		if (CardKingdomEggRoomUtil.isEggRoom(level)) {
+			Minecraft minecraft = Minecraft.getInstance();
+			int minY = level.getMinSection();
+			int maxY = level.getMaxSection();
+
+			for (int y = minY; y < maxY; y++) {
+				minecraft.levelRenderer.setSectionDirty(chunkPos.x, y, chunkPos.z);
+			}
 		}
-		if (!(event.getLevel() instanceof ClientLevel level) || !CardKingdomEggRoomUtil.isEggRoom(level)) {
-			return;
-		}
-		Minecraft minecraft = Minecraft.getInstance();
-		ChunkPos pos = event.getChunk().getPos();
-		int minY = level.getMinSection();
-		int maxY = level.getMaxSection();
-		for (int y = minY; y < maxY; y++) {
-			minecraft.levelRenderer.setSectionDirty(pos.x, y, pos.z);
-		}
+	}
+
+	@SubscribeEvent
+	public static void onChunkUnload(ChunkEvent.Unload event) {
+		if (!event.getLevel().isClientSide()) return;
+		if (!(event.getLevel() instanceof ClientLevel level)) return;
+
+		ChunkAccess chunk = event.getChunk();
+		ChunkPos chunkPos = chunk.getPos();
+
+        negativePhotons.remove(chunkPos);
 	}
 
 	@SubscribeEvent

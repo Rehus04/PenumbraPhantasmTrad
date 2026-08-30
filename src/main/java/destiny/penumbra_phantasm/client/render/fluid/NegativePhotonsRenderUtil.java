@@ -23,13 +23,17 @@ import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.FluidState;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import net.minecraftforge.client.ForgeHooksClient;
+import net.minecraftforge.client.event.RenderLevelStageEvent;
 import org.joml.Matrix4f;
 
 import java.awt.*;
+import java.util.Map;
+import java.util.Set;
 
 public class NegativePhotonsRenderUtil {
     public static final ResourceLocation IMAGE_DEPTH = new ResourceLocation(PenumbraPhantasm.MODID, "textures/misc/image_depth.png");
@@ -39,7 +43,7 @@ public class NegativePhotonsRenderUtil {
 
     public NegativePhotonsRenderUtil() {}
 
-    public static void renderNegativePhotonsBlocks(ClientLevel level, MultiBufferSource buffer, Camera camera, PoseStack pose) {
+    public static void renderNegativePhotonsBlocks(ClientLevel level, MultiBufferSource buffer, Camera camera, PoseStack pose, Map<ChunkPos, Set<BlockPos>> negativePhotons) {
         Color middleColor = Color.getHSBColor(0f, 0f, 0.05f);
         ShaderInstance shaderInstance = ModShaders.FOUNTAIN_MASKED;
 
@@ -78,22 +82,24 @@ public class NegativePhotonsRenderUtil {
         VertexConsumer consumer = buffer.getBuffer(RenderTypes.negativePhotons(WHITE_SCREEN, IMAGE_DEPTH, true));
 
         BlockPos cameraPos = BlockPos.containing(camera.getPosition());
-        int radius = 32;
+        int renderDistance = (int) Minecraft.getInstance().gameRenderer.getRenderDistance();
         BlockPos.MutableBlockPos currentPos = new BlockPos.MutableBlockPos();
 
-        for (int x = -radius; x <= radius; x++) {
-            for (int y = -radius; y <= radius; y++) {
-                for (int z = -radius; z <= radius; z++) {
+        for (int x = -renderDistance; x <= renderDistance; x++) {
+            for (int y = -level.getMaxBuildHeight(); y <= level.getMaxBuildHeight(); y++) {
+                for (int z = -renderDistance; z <= renderDistance; z++) {
                     currentPos.set(cameraPos.getX() + x, cameraPos.getY() + y, cameraPos.getZ() + z);
 
-                    ChunkPos chunkPos = new ChunkPos(currentPos);
-                    if (!level.hasChunk(chunkPos.x, chunkPos.z)) {
-                        continue;
-                    }
+                    if (!level.isLoaded(currentPos)) continue;
+                    if (!Minecraft.getInstance().levelRenderer.getFrustum().isVisible(new AABB(currentPos, currentPos).inflate(1))) continue;
 
-                    FluidState fluidState = level.getFluidState(currentPos);
-                    if (fluidState.getFluidType() == FluidTypeRegistry.NEGATIVE_PHOTONS.get()) {
-                        renderNegativePhotonsBlock(level, pose, consumer, currentPos.immutable(), fluidState, level.getBlockState(currentPos), camera);
+                    ChunkPos currentChunk = new ChunkPos(currentPos);
+
+                    for (BlockPos pos : negativePhotons.get(currentChunk)) {
+                        FluidState fluidState = level.getFluidState(pos);
+                        BlockState blockState = level.getBlockState(pos);
+
+                        renderNegativePhotonsBlock(level, pose, consumer, pos, fluidState, blockState, camera);
                     }
                 }
             }
