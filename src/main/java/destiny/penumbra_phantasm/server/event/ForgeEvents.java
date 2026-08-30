@@ -5,6 +5,7 @@ import destiny.penumbra_phantasm.server.advancement.TriggerCriterions;
 import destiny.penumbra_phantasm.server.block.DarknessBlock;
 import destiny.penumbra_phantasm.server.block.GreatDoorShapeBlock;
 import destiny.penumbra_phantasm.server.block.LuminescentWaterFluidBlock;
+import destiny.penumbra_phantasm.server.block.NegativePhotonsFluidBlock;
 import destiny.penumbra_phantasm.server.capability.*;
 import destiny.penumbra_phantasm.server.fountain.GenericProvider;
 import destiny.penumbra_phantasm.server.egg_room.CardKingdomEggRoomUtil;
@@ -148,8 +149,8 @@ public class ForgeEvents {
         BlockState blockState = level.getBlockState(clickPos);
         FluidState fluidState = blockState.getFluidState();
 
-        boolean isCustomFluid = blockState.getBlock() instanceof LuminescentWaterFluidBlock
-                || fluidState.is(FluidRegistry.SOURCE_PURE_DARKNESS.get());
+        boolean isCustomFluid = blockState.getBlock() instanceof LuminescentWaterFluidBlock || fluidState.is(FluidRegistry.SOURCE_PURE_DARKNESS.get())
+                || blockState.getBlock() instanceof NegativePhotonsFluidBlock;
 
         boolean isScarletBucket = emptyBucket.getItem() instanceof ScarletBucketItem;
 

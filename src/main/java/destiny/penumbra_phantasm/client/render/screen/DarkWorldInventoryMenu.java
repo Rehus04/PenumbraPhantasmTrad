@@ -54,7 +54,7 @@ public class DarkWorldInventoryMenu extends RecipeBookMenu<CraftingContainer> {
     }
 
     public DarkWorldInventoryMenu(Inventory pPlayerInventory, boolean pActive, final Player pOwner) {
-        super((MenuType<?>)null, InventoryMenu.CONTAINER_ID);
+        super(null, InventoryMenu.CONTAINER_ID);
         this.active = pActive;
         this.owner = pOwner;
         this.addSlot(new ResultSlot(pPlayerInventory.player, this.craftSlots, this.resultSlots, 0, RESULT_SLOT_X, RESULT_SLOT_Y));
@@ -65,7 +65,7 @@ public class DarkWorldInventoryMenu extends RecipeBookMenu<CraftingContainer> {
             }
         }
 
-        for (int k = 0; k < 4; ++k) {
+/*        for (int k = 0; k < 4; ++k) {
             final EquipmentSlot equipmentslot = SLOT_IDS[k];
             this.addSlot(new Slot(pPlayerInventory, 39 - k, ARMOR_SLOTS_X, ARMOR_SLOTS_Y + k * 18) {
                 public void setByPlayer(ItemStack pStack) {
@@ -83,14 +83,14 @@ public class DarkWorldInventoryMenu extends RecipeBookMenu<CraftingContainer> {
 
                 public boolean mayPickup(Player pPlayer) {
                     ItemStack itemstack = this.getItem();
-                    return !itemstack.isEmpty() && !pPlayer.isCreative() && EnchantmentHelper.hasBindingCurse(itemstack) ? false : super.mayPickup(pPlayer);
+                    return (itemstack.isEmpty() || pPlayer.isCreative() || !EnchantmentHelper.hasBindingCurse(itemstack)) && super.mayPickup(pPlayer);
                 }
 
                 public Pair<ResourceLocation, ResourceLocation> getNoItemIcon() {
                     return Pair.of(InventoryMenu.BLOCK_ATLAS, TEXTURE_EMPTY_SLOTS[equipmentslot.getIndex()]);
                 }
             });
-        }
+        }*/
 
         for (int l = 0; l < 3; ++l) {
             for (int j1 = 0; j1 < 9; ++j1) {

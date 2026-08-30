@@ -40,7 +40,8 @@ public class FluidRegistry {
 
     public static final ForgeFlowingFluid.Properties NEGATIVE_PHOTONS_PROPERTIES = new ForgeFlowingFluid.Properties(
             FluidTypeRegistry.NEGATIVE_PHOTONS, SOURCE_NEGATIVE_PHOTONS, FLOWING_NEGATIVE_PHOTONS)
-            .slopeFindDistance(2).levelDecreasePerBlock(2).block(BlockRegistry.NEGATIVE_PHOTONS);
+            .slopeFindDistance(2).levelDecreasePerBlock(2).block(BlockRegistry.NEGATIVE_PHOTONS)
+            .bucket(ItemRegistry.NEGATIVE_PHOTONS_BUCKET);
 
 
     public static void register(IEventBus eventBus) {

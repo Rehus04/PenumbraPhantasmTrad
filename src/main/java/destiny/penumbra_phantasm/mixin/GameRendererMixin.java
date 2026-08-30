@@ -1,9 +1,10 @@
 package destiny.penumbra_phantasm.mixin;
 
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexSorting;
+import com.mojang.blaze3d.vertex.*;
 import destiny.penumbra_phantasm.client.ClientConfig;
+import destiny.penumbra_phantasm.client.render.ModShaders;
+import destiny.penumbra_phantasm.client.render.fluid.NegativePhotonsRenderUtil;
 import destiny.penumbra_phantasm.client.render.fountain.FountainHueShiftRenderer;
 import destiny.penumbra_phantasm.client.render.fountain.FountainOpeningPosterizeRenderer;
 import destiny.penumbra_phantasm.client.render.RenderBlitUtil;
@@ -13,11 +14,15 @@ import destiny.penumbra_phantasm.client.render.textbox.DarkWorldDialogue;
 import destiny.penumbra_phantasm.client.render.textbox.DarkWorldTextBox;
 import destiny.penumbra_phantasm.server.egg_room.CardKingdomEggRoomUtil;
 import destiny.penumbra_phantasm.server.registry.CapabilityRegistry;
+import destiny.penumbra_phantasm.server.registry.FluidTypeRegistry;
 import destiny.penumbra_phantasm.server.util.DarkWorldUtil;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.GameRenderer;
+import net.minecraft.client.renderer.ShaderInstance;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.Level;
 import net.minecraftforge.client.ForgeHooksClient;
@@ -27,6 +32,8 @@ import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+
+import java.awt.*;
 
 @Mixin(GameRenderer.class)
 public class GameRendererMixin {
@@ -99,12 +106,6 @@ public class GameRendererMixin {
 			sealShineTick = minecraft.player.getCapability(CapabilityRegistry.SCREEN_ANIMATION).resolve().map(c -> c.sealShineTicker).orElse(-1);
 		}
 
-		boolean drawTextBox = minecraft.screen == null && DarkWorldDialogue.isActive() && DarkWorldDialogue.writer() != null;
-		boolean drawDarkness = landAlpha != 0f || fountainAlpha != 0f || sealShineTick >= 0;
-		if (!drawTextBox && !drawDarkness) {
-			return;
-		}
-
 		int width = minecraft.getWindow().getGuiScaledWidth();
 		int height = minecraft.getWindow().getGuiScaledHeight();
 
@@ -127,11 +128,19 @@ public class GameRendererMixin {
 		RenderSystem.defaultBlendFunc();
 		RenderSystem.setShaderColor(1f, 1f, 1f, 1f);
 
+		ClientLevel level = minecraft.level;
+		LocalPlayer player = minecraft.player;
+
+		if (player != null && player.getEyeInFluidType() == FluidTypeRegistry.NEGATIVE_PHOTONS.get()) {
+			renderNegativePhotonsOverlay(level, width, height);
+		}
+
 		renderLandScreenFadeOut(graphics, width, height, landAlpha);
 		renderTransitionFadeOut(graphics, width, height, fountainAlpha);
 		PoseStack sealShinePose = new PoseStack();
 		renderSealShine(sealShinePose, width, height, sealShineTick);
 
+		boolean drawTextBox = minecraft.screen == null && DarkWorldDialogue.isActive() && DarkWorldDialogue.writer() != null;
 		if (drawTextBox) {
 			DarkWorldTextBox.render(graphics, DarkWorldDialogue.writer(), width, height);
 		}
@@ -215,5 +224,48 @@ public class GameRendererMixin {
 		pose.translate(-width / 2f, -height / 2f, 0);
 		RenderBlitUtil.blit(IntroScreen.WHITE_SCREEN, pose, 0, 0, 1, 1, 1, endingAlpha1, 0.0F, 0.0F, width, height, width, height);
 		pose.popPose();
+	}
+
+	private void renderNegativePhotonsOverlay(Level level, int width, int height) {
+		ShaderInstance shaderInstance = ModShaders.FOUNTAIN_MASKED;
+
+		if (shaderInstance != null) {
+			float shadertime = (level.getGameTime()) * 0.01f;
+			shaderInstance.safeGetUniform("Time").set(shadertime);
+			Minecraft mc = Minecraft.getInstance();
+			float aspect = (float) mc.getWindow().getWidth() /
+					(float) mc.getWindow().getHeight();
+
+			shaderInstance.safeGetUniform("AspectRatio").set(aspect);
+
+		}
+
+		LocalPlayer player = Minecraft.getInstance().player;
+
+		if(player != null) {
+			if (shaderInstance != null) {
+				shaderInstance.safeGetUniform("TintColor").set(
+						1f,
+						1f,
+						1f,
+						1f
+				);
+			}
+		}
+
+		RenderSystem.setShader(() -> ModShaders.FOUNTAIN_MASKED);
+		RenderSystem.setShaderTexture(0, NegativePhotonsRenderUtil.WHITE_SCREEN);
+		RenderSystem.setShaderTexture(1, NegativePhotonsRenderUtil.IMAGE_DEPTH);
+
+		PoseStack pose = new PoseStack();
+		Matrix4f matrix = pose.last().pose();
+
+		BufferBuilder builder = Tesselator.getInstance().getBuilder();
+		builder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR_TEX);
+		builder.vertex(matrix, 0f, 0f, 0f).color(0.1f, 0.1f, 0.1f, 0.5f).uv(0f, 0f).endVertex();
+		builder.vertex(matrix, 0f, (float) height, 0f).color(0.1f, 0.1f, 0.1f, 0.5f).uv(0f, 1f).endVertex();
+		builder.vertex(matrix, (float) width, (float) height, 0f).color(0.1f, 0.1f, 0.1f, 0.5f).uv(1f, 1f).endVertex();
+		builder.vertex(matrix, (float) width, 0f, 0f).color(0.1f, 0.1f, 0.1f, 0.5f).uv(1f, 0f).endVertex();
+		BufferUploader.drawWithShader(builder.end());
 	}
 }

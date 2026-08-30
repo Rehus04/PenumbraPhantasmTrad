@@ -40,7 +40,7 @@ public class NegativePhotonsRenderUtil {
     public NegativePhotonsRenderUtil() {}
 
     public static void renderNegativePhotonsBlocks(ClientLevel level, MultiBufferSource buffer, Camera camera, PoseStack pose) {
-        Color middleColor = Color.getHSBColor(0f, 0f, 0.02f);
+        Color middleColor = Color.getHSBColor(0f, 0f, 0.05f);
         ShaderInstance shaderInstance = ModShaders.FOUNTAIN_MASKED;
 
         if (shaderInstance != null) {
@@ -123,7 +123,7 @@ public class NegativePhotonsRenderUtil {
         FluidState eastFluid = eastState.getFluidState();
 
         boolean flag1 = !isNeighborSameFluid(fluidState, upFluid);
-        boolean flag2 = shouldRenderFace(level, pos, fluidState, state, Direction.DOWN, downFluid) && !isFaceOccludedByNeighbor(level, pos, Direction.DOWN, 0.8888889F, state);
+        boolean flag2 = shouldRenderFace(level, pos, fluidState, state, Direction.DOWN, downFluid) && !isFaceOccludedByNeighbor(level, pos, Direction.DOWN, MAX_FLUID_HEIGHT, downState);
         boolean flag3 = shouldRenderFace(level, pos, fluidState, state, Direction.NORTH, northFluid);
         boolean flag4 = shouldRenderFace(level, pos, fluidState, state, Direction.SOUTH, southFluid);
         boolean flag5 = shouldRenderFace(level, pos, fluidState, state, Direction.WEST, westFluid);
@@ -151,14 +151,18 @@ public class NegativePhotonsRenderUtil {
             } else {
                 float f12 = getHeight(level, fluid, pos.north(), northState, northFluid);
                 float f13 = getHeight(level, fluid, pos.south(), southState, southFluid);
-                float f14 = getHeight(level, fluid, pos.east(), westState, westFluid);
-                float f15 = getHeight(level, fluid, pos.west(), eastState, eastFluid);
+                float f14 = getHeight(level, fluid, pos.east(), eastState, eastFluid);
+                float f15 = getHeight(level, fluid, pos.west(), westState, westFluid);
 
                 f7 = calculateAverageHeight(level, fluid, f11, f12, f14, pos.relative(Direction.NORTH).relative(Direction.EAST));
                 f8 = calculateAverageHeight(level, fluid, f11, f12, f15, pos.relative(Direction.NORTH).relative(Direction.WEST));
                 f9 = calculateAverageHeight(level, fluid, f11, f13, f14, pos.relative(Direction.SOUTH).relative(Direction.EAST));
                 f10 = calculateAverageHeight(level, fluid, f11, f13, f15, pos.relative(Direction.SOUTH).relative(Direction.WEST));
             }
+
+            double d1 = 0;
+            double d2 = 0;
+            double d0 = 0;
 
             float f16 = 0.001F;
             float f17 = flag2 ? 0.001F : 0.0F;
@@ -206,29 +210,102 @@ public class NegativePhotonsRenderUtil {
                     f25 = textureatlassprite.getV(8.0F + (-f28 - f27) * 16.0F);
                 }
 
-                float f49 = (f18 + f19 + f20 + f21) / 4.0F;
-                float f50 = (f22 + f23 + f24 + f25) / 4.0F;
-                float f51 = atextureatlassprite[0].uvShrinkRatio();
-
-                f18 = Mth.lerp(f51, f18, f49);
-                f19 = Mth.lerp(f51, f19, f49);
-                f20 = Mth.lerp(f51, f20, f49);
-                f21 = Mth.lerp(f51, f21, f49);
-                f22 = Mth.lerp(f51, f22, f50);
-                f23 = Mth.lerp(f51, f23, f50);
-                f24 = Mth.lerp(f51, f24, f50);
-                f25 = Mth.lerp(f51, f25, f50);
-
-                vertex(consumer, matrix, pos.getX(), pos.getY(), pos.getZ(), f18, f22);
-                vertex(consumer, matrix, pos.getX(), pos.getY(), pos.getZ(), f19, f23);
-                vertex(consumer, matrix, pos.getX(), pos.getY(), pos.getZ(), f20, f24);
-                vertex(consumer, matrix, pos.getX(), pos.getY(), pos.getZ(), f21, f25);
+                vertex(consumer, matrix, d1 + (double)0.0F, d2 + (double)f8, d0 + (double)0.0F, f18, f22);
+                vertex(consumer, matrix, d1 + (double)0.0F, d2 + (double)f10, d0 + (double)1.0F, f19, f23);
+                vertex(consumer, matrix, d1 + (double)1.0F, d2 + (double)f9, d0 + (double)1.0F, f20, f24);
+                vertex(consumer, matrix, d1 + (double)1.0F, d2 + (double)f7, d0 + (double)0.0F, f21, f25);
 
                 if (fluidState.shouldRenderBackwardUpFace(level, pos.above())) {
-                    vertex(consumer, matrix, pos.getX(), pos.getY(), pos.getZ(), f18, f22);
-                    vertex(consumer, matrix, pos.getX(), pos.getY(), pos.getZ(), f21, f25);
-                    vertex(consumer, matrix, pos.getX(), pos.getY(), pos.getZ(), f20, f24);
-                    vertex(consumer, matrix, pos.getX(), pos.getY(), pos.getZ(), f19, f23);
+                    vertex(consumer, matrix, d1 + (double)0.0F, d2 + (double)f8, d0 + (double)0.0F, f18, f22);
+                    vertex(consumer, matrix, d1 + (double)1.0F, d2 + (double)f7, d0 + (double)0.0F, f21, f25);
+                    vertex(consumer, matrix, d1 + (double)1.0F, d2 + (double)f9, d0 + (double)1.0F, f20, f24);
+                    vertex(consumer, matrix, d1 + (double)0.0F, d2 + (double)f10, d0 + (double)1.0F, f19, f23);
+                }
+            }
+
+            if (flag2) {
+                float f40 = atextureatlassprite[0].getU0();
+                float f41 = atextureatlassprite[0].getU1();
+                float f42 = atextureatlassprite[0].getV0();
+                float f43 = atextureatlassprite[0].getV1();
+
+                vertex(consumer, matrix, d1, d2 + (double)f17, d0 + (double)1.0F, f40, f43);
+                vertex(consumer, matrix, d1, d2 + (double)f17, d0, f40, f42);
+                vertex(consumer, matrix, d1 + (double)1.0F, d2 + (double)f17, d0, f41, f42);
+                vertex(consumer, matrix, d1 + (double)1.0F, d2 + (double)f17, d0 + (double)1.0F, f41, f43);
+            }
+
+            for(Direction direction : Direction.Plane.HORIZONTAL) {
+                float f44;
+                float f45;
+
+                double d3;
+                double d4;
+                double d5;
+                double d6;
+
+                boolean flag7;
+
+                switch (direction) {
+                    case NORTH:
+                        f44 = f8;
+                        f45 = f7;
+                        d3 = d1;
+
+                        d5 = d1 + (double)1.0F;
+                        d4 = d0 + (double)0.001F;
+                        d6 = d0 + (double)0.001F;
+                        flag7 = flag3;
+
+                        break;
+                    case SOUTH:
+                        f44 = f9;
+                        f45 = f10;
+                        d3 = d1 + (double)1.0F;
+                        d5 = d1;
+                        d4 = d0 + (double)1.0F - (double)0.001F;
+                        d6 = d0 + (double)1.0F - (double)0.001F;
+                        flag7 = flag4;
+
+                        break;
+                    case WEST:
+                        f44 = f10;
+                        f45 = f8;
+                        d3 = d1 + (double)0.001F;
+                        d5 = d1 + (double)0.001F;
+                        d4 = d0 + (double)1.0F;
+                        d6 = d0;
+                        flag7 = flag5;
+
+                        break;
+                    default:
+                        f44 = f7;
+                        f45 = f9;
+                        d3 = d1 + (double)1.0F - (double)0.001F;
+                        d5 = d1 + (double)1.0F - (double)0.001F;
+                        d4 = d0;
+                        d6 = d0 + (double)1.0F;
+                        flag7 = flag6;
+                }
+
+                if (flag7 && !isFaceOccludedByNeighbor(level, pos, direction, Math.max(f44, f45), level.getBlockState(pos.relative(direction)))) {
+                    BlockPos blockpos = pos.relative(direction);
+                    TextureAtlasSprite textureatlassprite2 = atextureatlassprite[1];
+
+                    if (atextureatlassprite[2] != null && level.getBlockState(blockpos).shouldDisplayFluidOverlay(level, blockpos, fluidState)) {
+                        textureatlassprite2 = atextureatlassprite[2];
+                    }
+
+                    float f53 = textureatlassprite2.getU(0.0F);
+                    float f32 = textureatlassprite2.getU(8.0F);
+                    float f33 = textureatlassprite2.getV((1.0F - f44) * 16.0F * 0.5F);
+                    float f34 = textureatlassprite2.getV((1.0F - f45) * 16.0F * 0.5F);
+                    float f35 = textureatlassprite2.getV(8.0F);
+
+                    vertex(consumer, matrix, d3, d2 + (double)f44, d4, f53, f33);
+                    vertex(consumer, matrix, d5, d2 + (double)f45, d6, f32, f34);
+                    vertex(consumer, matrix, d5, d2 + (double)f17, d6, f32, f35);
+                    vertex(consumer, matrix, d3, d2 + (double)f17, d4, f53, f35);
                 }
             }
         }
@@ -307,6 +384,7 @@ public class NegativePhotonsRenderUtil {
             pOutput[1] += 10.0F;
         } else if (pHeight >= 0.0F) {
             pOutput[0] += pHeight;
+            pOutput[1]++;
         }
     }
 }
