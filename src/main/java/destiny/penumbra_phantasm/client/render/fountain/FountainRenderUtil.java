@@ -762,8 +762,8 @@ public class FountainRenderUtil {
 
 		int pixelLength = (240 / 16) * length;
 		float optimizedCycleProgress = fountain.getFrameTick() / (27f * 3f);
-		float lowerRotation = 360f * optimizedCycleProgress* 0.5f;
-		float topRotation = 360f * optimizedCycleProgress * 0.25f;
+		float lowerRotation = -360f * optimizedCycleProgress* 0.5f;
+		float topRotation = -360f * optimizedCycleProgress * 0.25f;
 
 		poseStack.pushPose();
 		poseStack.translate(0.5f, pixelLength + 8f, 0.5f);
