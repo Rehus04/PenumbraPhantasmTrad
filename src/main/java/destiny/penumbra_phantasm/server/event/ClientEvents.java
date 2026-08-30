@@ -309,7 +309,7 @@ public class ClientEvents {
             if (section.hasOnlyAir()) continue;
             if (!section.maybeHas(state -> state.getFluidState().getFluidType() == FluidTypeRegistry.NEGATIVE_PHOTONS.get())) continue;
 
-			int sectionChunkY = chunk.getSectionIndexFromSectionY(sectionIndex);
+			int sectionChunkY = chunk.getSectionYFromSectionIndex(sectionIndex);
 			int sectionMinY = SectionPos.sectionToBlockCoord(sectionChunkY);
 
 			for (int sectionX = 0; sectionX < 16; sectionX++) {

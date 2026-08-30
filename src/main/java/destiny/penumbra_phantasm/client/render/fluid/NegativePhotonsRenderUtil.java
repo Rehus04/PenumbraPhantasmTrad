@@ -80,28 +80,24 @@ public class NegativePhotonsRenderUtil {
         }
 
         VertexConsumer consumer = buffer.getBuffer(RenderTypes.negativePhotons(WHITE_SCREEN, IMAGE_DEPTH, true));
-
         BlockPos cameraPos = BlockPos.containing(camera.getPosition());
+        ChunkPos cameraChunk = new ChunkPos(cameraPos);
         int renderDistance = (int) Minecraft.getInstance().gameRenderer.getRenderDistance();
-        BlockPos.MutableBlockPos currentPos = new BlockPos.MutableBlockPos();
 
-        for (int x = -renderDistance; x <= renderDistance; x++) {
-            for (int y = -level.getMaxBuildHeight(); y <= level.getMaxBuildHeight(); y++) {
-                for (int z = -renderDistance; z <= renderDistance; z++) {
-                    currentPos.set(cameraPos.getX() + x, cameraPos.getY() + y, cameraPos.getZ() + z);
+        for (Map.Entry<ChunkPos, Set<BlockPos>> entry : negativePhotons.entrySet()) {
+            ChunkPos chunkPos = entry.getKey();
+            Set<BlockPos> posSet = entry.getValue();
 
-                    if (!level.isLoaded(currentPos)) continue;
-                    if (!Minecraft.getInstance().levelRenderer.getFrustum().isVisible(new AABB(currentPos, currentPos).inflate(1))) continue;
+            if (Math.max(Math.abs(chunkPos.x - cameraChunk.x), Math.abs(chunkPos.z - cameraChunk.z)) > renderDistance) continue;
 
-                    ChunkPos currentChunk = new ChunkPos(currentPos);
+            for (BlockPos pos : posSet) {
+                FluidState fluidState = level.getFluidState(pos);
 
-                    for (BlockPos pos : negativePhotons.get(currentChunk)) {
-                        FluidState fluidState = level.getFluidState(pos);
-                        BlockState blockState = level.getBlockState(pos);
+                if (fluidState.getFluidType() != FluidTypeRegistry.NEGATIVE_PHOTONS.get()) continue;
 
-                        renderNegativePhotonsBlock(level, pose, consumer, pos, fluidState, blockState, camera);
-                    }
-                }
+                BlockState blockState = level.getBlockState(pos);
+
+                renderNegativePhotonsBlock(level, pose, consumer, pos, fluidState, blockState, camera);
             }
         }
     }
