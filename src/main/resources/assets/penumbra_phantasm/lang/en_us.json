@@ -6,7 +6,7 @@
   "item.penumbra_phantasm.real_knife": "§4Real Knife§r",
   "item.penumbra_phantasm.black_knife": "Black Knife",
 
-  "item.penumbra_phantasm.dark_wallet": "Dark Waller",
+  "item.penumbra_phantasm.dark_wallet": "Dark Wallet",
   "item.penumbra_phantasm.dark_dollar": "Dark Dollar",
   "item.penumbra_phantasm.dark_dime": "Dark Dime",
   "item.penumbra_phantasm.glowshard": "Glowshard",
@@ -74,6 +74,7 @@
   "item.penumbra_phantasm.dark_candy_bucket": "Dark Candy Bucket",
   "item.penumbra_phantasm.luminescent_water_bucket": "Luminescent Water Bucket",
   "item.penumbra_phantasm.pure_darkness_bucket": "Pure Darkness Bucket",
+  "item.penumbra_phantasm.negative_photons_bucket": "§8NEGATIVE PHOTONS§r Bucket",
 
   "item.penumbra_phantasm.egg": "Egg",
 
@@ -375,6 +376,7 @@
 
   "liquid.penumbra_phantasm.pure_darkness": "Pure Darkness",
   "liquid.penumbra_phantasm.luminescent_water": "Luminescent Water",
+  "liquid.penumbra_phantasm.negative_photons": "§8NEGATIVE PHOTONS§r",
 
   "itemGroup.penumbra_phantasm.main": "PENUMBRA PHANTASM",
   "itemGroup.penumbra_phantasm.card_kingdom": "CARD KINGDOM",
@@ -472,7 +474,7 @@
 
   "flavor_text.penumbra_phantasm.dark_dollar": "A piece of burnt paper with a stamp on it.",
   "flavor_text.penumbra_phantasm.dark_dime": "A stamped coin covered in soot. Did someone try to burn this?",
-  "flavor_text.penumbra_phantasm.dark_wallet": "A wallet for your live savings. Also horribly burnt.",
+  "flavor_text.penumbra_phantasm.dark_wallet": "A wallet for your life savings. Also horribly burnt.",
   "flavor_text.penumbra_phantasm.glowshard": "A shimmering shard. Its value increases each Chapter.",
 
   "flavor_text.penumbra_phantasm.door_key": "The key to a mysterious cell. Something feels strange about it.",

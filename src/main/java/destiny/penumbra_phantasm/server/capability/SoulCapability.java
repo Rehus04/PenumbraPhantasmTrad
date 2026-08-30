@@ -4,6 +4,7 @@ import destiny.penumbra_phantasm.client.network.ClientBoundIntroPacket;
 import destiny.penumbra_phantasm.client.network.ClientBoundSoulSyncPacket;
 import destiny.penumbra_phantasm.server.item.SoulHearthItem;
 import destiny.penumbra_phantasm.server.registry.DamageTypeRegistry;
+import destiny.penumbra_phantasm.server.registry.FluidTypeRegistry;
 import destiny.penumbra_phantasm.server.registry.ItemRegistry;
 import destiny.penumbra_phantasm.server.registry.PacketHandlerRegistry;
 import destiny.penumbra_phantasm.server.util.DarkWorldUtil;
@@ -15,7 +16,9 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.material.FluidState;
 import net.minecraftforge.common.util.INBTSerializable;
+import net.minecraftforge.fluids.FluidType;
 import net.minecraftforge.network.PacketDistributor;
 import org.jetbrains.annotations.NotNull;
 
@@ -48,6 +51,7 @@ public class SoulCapability implements INBTSerializable<CompoundTag> {
     public boolean diedWithSoulHearth = false;
     public int determination = 0;
     public int connectionLevel = 0;
+
     public int eggRoomManGone = 0;
     public int eggObtained = 0;
     public String eggReturnDim = "";
@@ -75,7 +79,13 @@ public class SoulCapability implements INBTSerializable<CompoundTag> {
             seenIntro = true;
         }
 
-        if (!DarkWorldUtil.isDepths(level)) {
+        if (isInNegativePhotons(level, player)) {
+            if (level.getGameTime() % 5 == 0) {
+                if (determination > 0) {
+                    determination = determination - 1;
+                }
+            }
+        } else if (!DarkWorldUtil.isDepths(level)) {
             if (hasOwnSoulHearth(player)) {
                 if (determination < 100) {
                     if (level.getGameTime() % (5 * 20) == 0) {
@@ -122,6 +132,13 @@ public class SoulCapability implements INBTSerializable<CompoundTag> {
         }
 
         return false;
+    }
+
+    public static boolean isInNegativePhotons(Level level, Player player) {
+        FluidType fluidUp = player.getEyeInFluidType();
+        FluidType fluidDown = level.getFluidState(player.getOnPos().above()).getFluidType();
+
+        return fluidUp == FluidTypeRegistry.NEGATIVE_PHOTONS.get() || fluidDown == FluidTypeRegistry.NEGATIVE_PHOTONS.get();
     }
 
     @Override

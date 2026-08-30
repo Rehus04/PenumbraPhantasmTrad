@@ -1,6 +1,6 @@
 {
   "parent": "minecraft:item/generated",
   "textures": {
-    "layer0": "penumbra_phantasm:item/dark_wallet_empty"
+    "layer0": "penumbra_phantasm:item/negative_photons_bucket"
   }
 }

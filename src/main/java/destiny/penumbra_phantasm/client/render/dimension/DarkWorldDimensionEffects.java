@@ -1,5 +1,9 @@
 package destiny.penumbra_phantasm.client.render.dimension;
 
+import destiny.penumbra_phantasm.client.render.ModShaders;
+import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.client.renderer.*;
+import net.minecraft.world.phys.Vec2;
 import org.joml.Matrix4f;
 
 import com.mojang.blaze3d.systems.RenderSystem;
@@ -14,20 +18,32 @@ import destiny.penumbra_phantasm.PenumbraPhantasm;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.client.renderer.DimensionSpecialEffects;
-import net.minecraft.client.renderer.FogRenderer;
-import net.minecraft.client.renderer.GameRenderer;
-import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec3;
 
+import java.awt.*;
+
 public class DarkWorldDimensionEffects extends DimensionSpecialEffects {
     public static final ResourceLocation DARK_WORLD_DIMENSION_EFFECTS = new ResourceLocation(PenumbraPhantasm.MODID, "dark_world_dimension_effects");
+
     protected VertexBuffer skyBuffer;
+
     public DarkWorldDimensionEffects() {
         super(OverworldEffects.CLOUD_LEVEL, true, SkyType.NORMAL, false, false);
         this.skyBuffer = createDarkSky();
+    }
+
+    public static VertexBuffer createSkyBuffer(float scale) {
+        VertexBuffer skyBuffer = new VertexBuffer(VertexBuffer.Usage.STATIC);
+        Tesselator tesselator = Tesselator.getInstance();
+        BufferBuilder bufferBuilder = tesselator.getBuilder();
+        BufferBuilder.RenderedBuffer renderedBuffer = DarkWorldDimensionEffects.buildSkyDisc(bufferBuilder, scale);
+        skyBuffer.bind();
+        skyBuffer.upload(renderedBuffer);
+        VertexBuffer.unbind();
+
+        return skyBuffer;
     }
 
     public static VertexBuffer createDarkSky() {
@@ -55,6 +71,24 @@ public class DarkWorldDimensionEffects extends DimensionSpecialEffects {
         for(int i = -180; i <= 180; i += 45) {
             float radians = (float) Math.toRadians(i);
             builder.vertex(invertibleBaseRadius * Mth.cos(radians), scale, baseRadius * Mth.sin(radians)).endVertex();
+        }
+
+        return builder.end();
+    }
+
+    public static BufferBuilder.RenderedBuffer buildDepthsSkyDisc(BufferBuilder builder, float scale) {
+        float baseRadius = 512F;
+        float invertibleBaseRadius = Math.signum(scale) * baseRadius;
+
+        RenderSystem.setShader(GameRenderer::getPositionColorTexShader);
+
+        builder.begin(VertexFormat.Mode.TRIANGLE_FAN, DefaultVertexFormat.POSITION_COLOR_TEX);
+        builder.vertex(0, scale, 0).color(255, 255, 255, 255).uv(0.5f, 0.5f).endVertex();
+
+        for(int i = -180; i <= 180; i += 45) {
+            float radians = (float) Math.toRadians(i);
+            builder.vertex(invertibleBaseRadius * Mth.cos(radians), scale, baseRadius * Mth.sin(radians))
+                    .color(255, 255, 255, 255).uv(0.5f, 0.5f).endVertex();
         }
 
         return builder.end();

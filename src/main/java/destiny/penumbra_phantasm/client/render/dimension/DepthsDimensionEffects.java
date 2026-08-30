@@ -8,23 +8,30 @@ import com.mojang.blaze3d.vertex.Tesselator;
 import com.mojang.blaze3d.vertex.VertexBuffer;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import destiny.penumbra_phantasm.PenumbraPhantasm;
+import destiny.penumbra_phantasm.client.render.ModShaders;
 import net.minecraft.client.Camera;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.client.renderer.DimensionSpecialEffects;
-import net.minecraft.client.renderer.FogRenderer;
-import net.minecraft.client.renderer.GameRenderer;
-import net.minecraft.client.renderer.LightTexture;
+import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.client.renderer.*;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Matrix4f;
 
+import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 
+import static destiny.penumbra_phantasm.client.render.dimension.CardKingdomDimensionEffects.SKY_DISC_HEIGHT;
+import static destiny.penumbra_phantasm.client.render.dimension.DarkWorldDimensionEffects.createSkyBuffer;
+
 public class DepthsDimensionEffects extends DimensionSpecialEffects {
     public static final ResourceLocation DEPTHS_DIMENSION_EFFECTS = new ResourceLocation(PenumbraPhantasm.MODID, "depths_dimension_effects");
+
+    public static final ResourceLocation IMAGE_DEPTH = new ResourceLocation(PenumbraPhantasm.MODID, "textures/misc/image_depth.png");
+    public static final ResourceLocation WHITE_SCREEN = new ResourceLocation(PenumbraPhantasm.MODID, "textures/misc/white_screen.png");
 
     private static final ResourceLocation[] TITAN_TEXTURES = new ResourceLocation[]{
             new ResourceLocation(PenumbraPhantasm.MODID, "textures/environment/depths/titan_1.png"),
@@ -52,17 +59,21 @@ public class DepthsDimensionEffects extends DimensionSpecialEffects {
     private static final float CYLINDER_RADIUS = 96F;
 
     private final VertexBuffer skyBuffer;
-    private final VertexBuffer dynamicTexturedBuffer;
-    private final VertexBuffer dynamicColorBuffer;
+    private final VertexBuffer lowerSkyBuffer;
+    private final VertexBuffer silhouettesBuffer;
+    private final VertexBuffer flashesBuffer;
+    private final VertexBuffer flashesBackgroundBuffer;
 
     private long spriteSeed = Long.MIN_VALUE;
     private List<Sprite> sprites = List.of();
 
     public DepthsDimensionEffects() {
         super(Float.NaN, true, SkyType.NONE, false, false);
-        this.skyBuffer = DarkWorldDimensionEffects.createDarkSky();
-        this.dynamicTexturedBuffer = new VertexBuffer(VertexBuffer.Usage.STATIC);
-        this.dynamicColorBuffer = new VertexBuffer(VertexBuffer.Usage.STATIC);
+        this.skyBuffer = createSkyBuffer(SKY_DISC_HEIGHT);
+        this.lowerSkyBuffer = createSkyBuffer(-SKY_DISC_HEIGHT);
+        this.silhouettesBuffer = new VertexBuffer(VertexBuffer.Usage.STATIC);
+        this.flashesBuffer = new VertexBuffer(VertexBuffer.Usage.STATIC);
+        this.flashesBackgroundBuffer = new VertexBuffer(VertexBuffer.Usage.STATIC);
     }
 
     @Override
@@ -75,6 +86,8 @@ public class DepthsDimensionEffects extends DimensionSpecialEffects {
 
         this.skyBuffer.bind();
         this.skyBuffer.drawWithShader(poseStack.last().pose(), projectionMatrix, RenderSystem.getShader());
+        this.lowerSkyBuffer.bind();
+        this.lowerSkyBuffer.drawWithShader(poseStack.last().pose(), projectionMatrix, RenderSystem.getShader());
         VertexBuffer.unbind();
 
         RenderSystem.setShaderColor(1F, 1F, 1F, 1F);
@@ -84,6 +97,7 @@ public class DepthsDimensionEffects extends DimensionSpecialEffects {
         RenderSystem.setShaderFogStart(CYLINDER_RADIUS * 4F);
         RenderSystem.setShaderFogEnd(CYLINDER_RADIUS * 4.5F);
 
+        this.renderFlashesBackground(level, partialTick, poseStack, projectionMatrix);
         this.renderFlashes(level, partialTick, poseStack, projectionMatrix);
 
         this.createSprites(level);
@@ -185,9 +199,82 @@ public class DepthsDimensionEffects extends DimensionSpecialEffects {
         }
 
         BufferBuilder.RenderedBuffer renderedBuffer = bufferBuilder.end();
-        this.dynamicColorBuffer.bind();
-        this.dynamicColorBuffer.upload(renderedBuffer);
-        this.dynamicColorBuffer.drawWithShader(poseStack.last().pose(), projectionMatrix, RenderSystem.getShader());
+        this.flashesBuffer.bind();
+        this.flashesBuffer.upload(renderedBuffer);
+        this.flashesBuffer.drawWithShader(poseStack.last().pose(), projectionMatrix, RenderSystem.getShader());
+
+        VertexBuffer.unbind();
+    }
+
+    private void renderFlashesBackground(ClientLevel level, float partialTick, PoseStack poseStack, Matrix4f projectionMatrix) {
+        Tesselator tesselator = Tesselator.getInstance();
+        BufferBuilder bufferBuilder = tesselator.getBuilder();
+        boolean drawing = false;
+
+        ActiveFlash flash = this.getActiveFlash(level, partialTick);
+        if (flash != null) {
+            RenderSystem.setShader(GameRenderer::getPositionColorTexShader);
+            bufferBuilder.begin(VertexFormat.Mode.TRIANGLES, DefaultVertexFormat.POSITION_COLOR);
+            drawing = true;
+
+            Vec3 flashCenter = new Vec3(Mth.cos(flash.event.azimuth()) * flash.event.radius(), FLASH_Y,
+                    Mth.sin(flash.event.azimuth()) * flash.event.radius()
+            );
+            Basis basis = getUprightBasis(flashCenter);
+            float radius = 16F * FLASH_RADIUS_SCALE;
+            this.addFlashDisc(bufferBuilder, flashCenter, basis, radius, flash.alpha);
+        }
+
+        if (!drawing) {
+            return;
+        }
+
+        BufferBuilder.RenderedBuffer renderedBuffer = bufferBuilder.end();
+        this.flashesBackgroundBuffer.bind();
+        this.flashesBackgroundBuffer.upload(renderedBuffer);
+
+        Color middleColor = Color.getHSBColor(0f, 0f, 0.02f);
+        ShaderInstance shaderInstance = ModShaders.FOUNTAIN_MASKED;
+
+        if (shaderInstance != null) {
+            float shadertime = (level.getGameTime()) * 0.01f;
+            shaderInstance.safeGetUniform("Time").set(shadertime);
+            Minecraft mc = Minecraft.getInstance();
+            float aspect = (float) mc.getWindow().getWidth() /
+                    (float) mc.getWindow().getHeight();
+
+            shaderInstance.safeGetUniform("AspectRatio").set(aspect);
+
+        }
+
+        LocalPlayer player = Minecraft.getInstance().player;
+
+        if(player != null) {
+            float middleRed = middleColor.getRed() / 255f;
+            float middleGreen = middleColor.getGreen() / 255f;
+            float middleBlue = middleColor.getBlue() / 255f;
+
+            float tintRed = 1f + (middleRed - 1f);
+            float tintGreen = 1f + (middleGreen - 1f);
+            float tintBlue = 1f + (middleBlue - 1f);
+
+            if (shaderInstance != null) {
+                shaderInstance.safeGetUniform("TintColor").set(
+                        tintRed,
+                        tintGreen,
+                        tintBlue,
+                        1f
+                );
+            }
+        }
+
+        RenderSystem.setShaderTexture(0, WHITE_SCREEN);
+        RenderSystem.setShaderTexture(1, IMAGE_DEPTH);
+
+        RenderSystem.setShaderColor(1f, 1f, 1f, 1f);
+
+        this.flashesBackgroundBuffer.drawWithShader(poseStack.last().pose(), projectionMatrix, ModShaders.FOUNTAIN_MASKED);
+
         VertexBuffer.unbind();
     }
 
@@ -208,9 +295,9 @@ public class DepthsDimensionEffects extends DimensionSpecialEffects {
             this.addSilhouetteQuad(bufferBuilder, sprite.center, basis, sprite.width, sprite.height);
 
             BufferBuilder.RenderedBuffer renderedBuffer = bufferBuilder.end();
-            this.dynamicTexturedBuffer.bind();
-            this.dynamicTexturedBuffer.upload(renderedBuffer);
-            this.dynamicTexturedBuffer.drawWithShader(poseStack.last().pose(), projectionMatrix, RenderSystem.getShader());
+            this.silhouettesBuffer.bind();
+            this.silhouettesBuffer.upload(renderedBuffer);
+            this.silhouettesBuffer.drawWithShader(poseStack.last().pose(), projectionMatrix, RenderSystem.getShader());
             VertexBuffer.unbind();
         }
     }
@@ -282,6 +369,19 @@ public class DepthsDimensionEffects extends DimensionSpecialEffects {
         up = towardCamera.cross(right).normalize();
 
         return new Basis(right, up);
+    }
+
+    public static VertexBuffer createDepthsSkyBuffer(float scale) {
+        VertexBuffer skyBuffer = new VertexBuffer(VertexBuffer.Usage.STATIC);
+        Tesselator tesselator = Tesselator.getInstance();
+        BufferBuilder bufferBuilder = tesselator.getBuilder();
+        BufferBuilder.RenderedBuffer renderedBuffer = DarkWorldDimensionEffects.buildDepthsSkyDisc(bufferBuilder, scale);
+
+        skyBuffer.bind();
+        skyBuffer.upload(renderedBuffer);
+        VertexBuffer.unbind();
+
+        return skyBuffer;
     }
 
     @Override
