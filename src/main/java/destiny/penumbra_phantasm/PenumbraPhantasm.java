@@ -16,6 +16,7 @@ import destiny.penumbra_phantasm.client.render.particle.*;
 import destiny.penumbra_phantasm.client.render.screen.CheshireChestScreen;
 import destiny.penumbra_phantasm.client.render.screen.DarkCandyCraftingTableScreen;
 import destiny.penumbra_phantasm.client.render.screen.UmbrastoneFurnaceScreen;
+import destiny.penumbra_phantasm.client.tooltip.DarkMoneyTooltipComponent;
 import destiny.penumbra_phantasm.server.datapack.*;
 import destiny.penumbra_phantasm.server.item.property.RosegoldLighterItemProperty;
 import destiny.penumbra_phantasm.server.registry.*;
@@ -39,6 +40,7 @@ import net.minecraft.client.particle.FlameParticle;
 import net.minecraft.client.renderer.ItemBlockRenderTypes;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.entity.EntityRenderers;
+import net.minecraftforge.client.event.*;
 import net.minecraftforge.fml.ModList;
 import net.minecraftforge.registries.DataPackRegistryEvent;
 import net.minecraft.client.renderer.item.ItemProperties;
@@ -46,13 +48,6 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.FlowerPotBlock;
 import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.client.event.EntityRenderersEvent;
-import net.minecraftforge.client.event.RegisterClientReloadListenersEvent;
-import net.minecraftforge.client.event.RegisterColorHandlersEvent;
-import net.minecraftforge.client.event.RegisterDimensionSpecialEffectsEvent;
-import net.minecraftforge.client.event.RegisterGuiOverlaysEvent;
-import net.minecraftforge.client.event.RegisterKeyMappingsEvent;
-import net.minecraftforge.client.event.RegisterParticleProvidersEvent;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -64,6 +59,8 @@ import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import org.slf4j.Logger;
 import com.mojang.logging.LogUtils;
+
+import java.util.function.Function;
 
 import static destiny.penumbra_phantasm.server.item.SoulHearthItem.SOUL_TYPE;
 
@@ -182,6 +179,12 @@ public class PenumbraPhantasm {
             event.register(CardKingdomDimensionEffects.CARD_KINGDOM_DIMENSION_EFFECTS, cardKingdomDimensionEffects);
             event.register(EggRoomDimensionEffects.EGG_ROOM_DIMENSION_EFFECTS, eggRoomDimensionEffects);
             event.register(DepthsDimensionEffects.DEPTHS_DIMENSION_EFFECTS, depthsDimensionEffects);
+        }
+
+        @SubscribeEvent
+        public static void registerTooltip(RegisterClientTooltipComponentFactoriesEvent event)
+        {
+            event.register(DarkMoneyTooltipComponent.class, Function.identity());
         }
 
         @SubscribeEvent

@@ -76,7 +76,7 @@ public class ItemRegistry {
     public static final RegistryObject<Item> DARK_DIME = ITEMS.register("dark_dime",
             () -> new FlavorTooltipItem(new Item.Properties()));
     public static final RegistryObject<Item> DARK_WALLET = ITEMS.register("dark_wallet",
-            () -> new FlavorTooltipItem(new Item.Properties()));
+            () -> new WallerItem(new Item.Properties().stacksTo(1)));
     public static final RegistryObject<Item> GLOWSHARD = ITEMS.register("glowshard",
             () -> new FlavorTooltipItem(new Item.Properties().stacksTo(1)));
 

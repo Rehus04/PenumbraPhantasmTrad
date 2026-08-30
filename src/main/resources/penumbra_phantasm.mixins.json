@@ -5,6 +5,7 @@
   "refmap": "penumbra_phantasm.refmap.json",
   "compatibilityLevel": "JAVA_17",
   "mixins": [
+    "AbstractContainerMixin",
     "BlockLightEngineMixin",
     "InventoryMenuMixin",
     "LightEngineAccessor",
@@ -20,10 +21,10 @@
     "GameRendererMixin",
     "LevelRendererMixin",
     "LightTextureMixin",
+    "LiquidBlockRendererMixin",
     "MouseHandlerMixin",
     "MusicSuppressionMixin",
-    "PlayerMixin",
-    "LiquidBlockRendererMixin"
+    "PlayerMixin"
   ],
   "injectors": {
     "defaultRequire": 1
