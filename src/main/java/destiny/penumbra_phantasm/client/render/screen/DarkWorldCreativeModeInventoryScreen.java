@@ -548,11 +548,8 @@ public class DarkWorldCreativeModeInventoryScreen extends EffectRenderingInvento
                 int l;
                 int i1;
                 if (k >= 5 && k < 9) {
-                    int k1 = k - 5;
-                    int i2 = k1 / 2;
-                    int k2 = k1 % 2;
-                    l = (i2 == 0) ? 55 : 107;
-                    i1 = 6 + k2 * 27;
+                    l = -2000;
+                    i1 = -2000;
                 } else if (k >= 0 && k < 5) {
                     l = -2000;
                     i1 = -2000;
