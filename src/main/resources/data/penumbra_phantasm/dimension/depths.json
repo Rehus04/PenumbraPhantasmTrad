@@ -1,22 +1,16 @@
 {
   "type": "penumbra_phantasm:depths_dimension_type",
   "generator": {
-    "type": "minecraft:flat",
-    "settings": {
-      "biome": "penumbra_phantasm:challenger_dark",
-      "lakes": false,
-      "features": true,
-      "layers": [
-        {
-          "height": 1,
-          "block": "penumbra_phantasm:unbreakable_darkness"
-        },
-        {
-          "height": 1,
-          "block": "penumbra_phantasm:tenebralith"
-        }
-      ],
-      "structure_overrides": []
+    "type": "minecraft:noise",
+    "settings": "penumbra_phantasm:depths_noise_settings",
+    "biome_source": {
+      "type": "minecraft:multi_noise",
+      "biomes": [
+        "penumbra_phantasm:challenger_dark",
+        "penumbra_phantasm:woetorn_archipelago",
+        "penumbra_phantasm:black_shores",
+        "penumbra_phantasm:starless_sea"
+      ]
     }
   }
 }
