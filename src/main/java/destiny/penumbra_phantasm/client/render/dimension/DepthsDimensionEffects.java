@@ -233,7 +233,7 @@ public class DepthsDimensionEffects extends DimensionSpecialEffects {
         this.flashesBackgroundBuffer.bind();
         this.flashesBackgroundBuffer.upload(renderedBuffer);
 
-        Color middleColor = Color.getHSBColor(0f, 0f, 0.02f);
+        Color middleColor = Color.getHSBColor(0f, 0f, 0.1f);
         ShaderInstance shaderInstance = ModShaders.FOUNTAIN_MASKED;
 
         if (shaderInstance != null) {
