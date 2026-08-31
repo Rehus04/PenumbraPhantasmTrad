@@ -11,8 +11,8 @@
     }
   },
   "pattern": [
-    "W#W",
-    "W#W"
+    "#W#",
+    "#W#"
   ],
   "result": {
     "count": 3,
