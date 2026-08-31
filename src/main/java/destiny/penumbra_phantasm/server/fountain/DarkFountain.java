@@ -967,7 +967,10 @@ public class DarkFountain {
                     this.depthsTransit.remove(serverPlayer.getUUID());
                 }
 
-                if (canPierceFountain(serverPlayer) && !this.depthsTransit.contains(serverPlayer.getUUID())) {
+                if (this.sealingTick > 0) {
+                    pushStrength = DEPTHS_PIERCE_PUSH_STRENGTH;
+                    showPushMessage = false;
+                } else if (canPierceFountain(serverPlayer) && !this.depthsTransit.contains(serverPlayer.getUUID())) {
                     if (xz < DEPTHS_PIERCE_XZ && entityPos.y > fountainPos.getY() - 1.0) {
                         tryEnterDepths(serverPlayer, level);
                         continue;
