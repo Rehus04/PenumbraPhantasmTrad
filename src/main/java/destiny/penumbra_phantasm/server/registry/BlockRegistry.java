@@ -469,6 +469,11 @@ public class BlockRegistry {
                     .mapColor(MapColor.NONE).strength(-1.0F, 3600000.0F).noLootTable().pushReaction(PushReaction.BLOCK)
                     .noOcclusion().noParticlesOnBreak()));
 
+    public static final RegistryObject<Block> TITANSTONE = registerBlock("titanstone",
+            () -> new UnbreakableDarknessBlock(BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.COLOR_GRAY).strength(-1.0F, 3600000.0F).noLootTable().pushReaction(PushReaction.BLOCK)
+                    .sound(SoundTypeRegistry.CLIFF).noParticlesOnBreak()));
+
     private static <T extends Block> RegistryObject<T> registerBlock(String name, Supplier<T> block) {
         RegistryObject<T> toReturn = BLOCKS.register(name, block);
         registerBlockItem(name, toReturn);
