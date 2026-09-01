@@ -2,6 +2,8 @@
   "sea_level": 63,
   "aquifers_enabled": false,
   "ore_veins_enabled": false,
+  "legacy_random_source": false,
+  "disable_mob_generation": false,
   "default_block": {
     "Name": "penumbra_phantasm:tenebralith"
   },
@@ -29,7 +31,7 @@
     },
     "erosion": 0,
     "depth": 0,
-    "rides": {
+    "ridges": {
       "type": "minecraft:noise",
       "noise": "penumbra_phantasm:depths_weirdness",
       "xz_scale": 1,
@@ -37,46 +39,271 @@
     },
     "final_density": {
       "type": "minecraft:interpolated",
-      "argument1": {
-        "type": "minecraft:clamped_gradient",
-        "from_y": 50,
-        "to_y": 76,
-        "from_value": 2,
-        "to_value": -2
-      },
-      "argument2": {
-        "type": "minecraft:spline",
-        "spline": {
-          "coordinate": {
-
+      "argument": {
+        "type": "minecraft:add",
+        "argument1": {
+          "type": "minecraft:add",
+          "argument1": {
+            "type": "minecraft:y_clamped_gradient",
+            "from_y": 50,
+            "to_y": 76,
+            "from_value": 2,
+            "to_value": -2
           },
-          "points": [
-            {
-              "location": -1.00,
-              "value": -1.6,
-              "derivative": 0.0
-            },
-            {
-              "location": -0.22,
-              "value": -1.2,
-              "derivative": 0.0
-            },
-            {
-              "location": -0.08,
-              "value": 0.15,
-              "derivative": 0.0
-            },
-            {
-              "location": 0.20,
-              "value": 4.5,
-              "derivative": 0.0
-            },
-            {
-              "location": 1.00,
-              "value": 5.0,
-              "derivative": 0.0
+          "argument2": {
+            "type": "minecraft:spline",
+            "spline": {
+              "coordinate": {
+                "type": "minecraft:noise",
+                "noise": "penumbra_phantasm:depths_continents",
+                "xz_scale": 1,
+                "y_scale": 0
+              },
+              "points": [
+                {
+                  "location": -1.00,
+                  "value": -1.6,
+                  "derivative": 0.0
+                },
+                {
+                  "location": -0.22,
+                  "value": -1.2,
+                  "derivative": 0.0
+                },
+                {
+                  "location": -0.08,
+                  "value": 0.15,
+                  "derivative": 0.0
+                },
+                {
+                  "location": 0.20,
+                  "value": 4.5,
+                  "derivative": 0.0
+                },
+                {
+                  "location": 1.00,
+                  "value": 5.0,
+                  "derivative": 0.0
+                }
+              ]
             }
-          ]
+          }
+        },
+        "argument2": {
+          "type": "minecraft:add",
+          "argument1": {
+            "type": "minecraft:add",
+            "argument1": {
+              "type": "minecraft:mul",
+              "argument1": {
+                "type": "minecraft:cube",
+                "argument": {
+                  "type": "minecraft:max",
+                  "argument1": 0,
+                  "argument2": {
+                    "type": "minecraft:noise",
+                    "noise": "penumbra_phantasm:depths_spikes",
+                    "xz_scale": 1,
+                    "y_scale": 0
+                  }
+                }
+              },
+              "argument2": {
+                "type": "minecraft:mul",
+                "argument1": 12,
+                "argument2": {
+                  "type": "minecraft:spline",
+                  "spline": {
+                    "coordinate": {
+                      "type": "minecraft:noise",
+                      "noise": "penumbra_phantasm:depths_weirdness",
+                      "xz_scale": 1,
+                      "y_scale": 0
+                    },
+                    "points": [
+                      {
+                        "location": -1,
+                        "value": 0,
+                        "derivative": 0
+                      },
+                      {
+                        "location": 0.05,
+                        "value": 0,
+                        "derivative": 0
+                      },
+                      {
+                        "location": 0.25,
+                        "value": 1,
+                        "derivative": 0
+                      },
+                      {
+                        "location": 1,
+                        "value": 1,
+                        "derivative": 0
+                      }
+                    ]
+                  }
+                }
+              }
+            },
+            "argument2": {
+              "type": "minecraft:mul",
+              "argument1": -1.8,
+              "argument2": {
+                "type": "minecraft:spline",
+                "spline": {
+                  "coordinate": {
+                    "type": "minecraft:noise",
+                    "noise": "penumbra_phantasm:depths_weirdness",
+                    "xz_scale": 1,
+                    "y_scale": 0
+                  },
+                  "points": [
+                    { "location": -1,
+                      "value": 0,
+                      "derivative": 0
+                    },
+                    {
+                      "location": 0.05,
+                      "value": 0,
+                      "derivative": 0
+                    },
+                    {
+                      "location": 0.25,
+                      "value": 1,
+                      "derivative": 0
+                    },
+                    {
+                      "location": 1,
+                      "value": 1,
+                      "derivative": 0
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "argument2": {
+            "type": "minecraft:mul",
+            "argument1": -1,
+            "argument2": {
+              "type": "minecraft:mul",
+              "argument1": {
+                "type": "minecraft:mul",
+                "argument1": {
+                  "type": "minecraft:mul",
+                  "argument1": {
+                    "type": "minecraft:max",
+                    "argument1": 0,
+                    "argument2": {
+                      "type": "minecraft:add",
+                      "argument1": 0.22,
+                      "argument2": {
+                        "type": "minecraft:mul",
+                        "argument1": -1,
+                        "argument2": {
+                          "type": "minecraft:abs",
+                          "argument": {
+                            "type": "minecraft:shifted_noise",
+                            "noise": "penumbra_phantasm:depths_cracks",
+                            "xz_scale": 1,
+                            "y_scale": 0,
+                            "shift_x": {
+                              "type": "minecraft:mul",
+                              "argument1": 25,
+                              "argument2": {
+                                "type": "minecraft:noise",
+                                "noise": "penumbra_phantasm:depths_cracks_warp",
+                                "xz_scale": 1,
+                                "y_scale": 0
+                              }
+                            },
+                            "shift_y": 0,
+                            "shift_z": {
+                              "type": "minecraft:mul",
+                              "argument1": 25,
+                              "argument2": {
+                                "type": "minecraft:noise",
+                                "noise": "penumbra_phantasm:depths_cracks_warp",
+                                "xz_scale": 0.8,
+                                "y_scale": 0
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "argument2": 8
+                },
+                "argument2": {
+                  "type": "minecraft:spline",
+                  "spline": {
+                    "coordinate": {
+                      "type": "minecraft:noise",
+                      "noise": "penumbra_phantasm:depths_weirdness",
+                      "xz_scale": 1,
+                      "y_scale": 0
+                    },
+                    "points": [
+                      {
+                        "location": -1,
+                        "value": 1,
+                        "derivative": 0 },
+                      {
+                        "location": 0.05,
+                        "value": 1,
+                        "derivative": 0
+                      },
+                      {
+                        "location": 0.25,
+                        "value": 0,
+                        "derivative": 0
+                      },
+                      {
+                        "location": 1,
+                        "value": 0,
+                        "derivative": 0
+                      }
+                    ]
+                  }
+                }
+              },
+              "argument2": {
+                "type": "minecraft:spline",
+                "spline": {
+                  "coordinate": {
+                    "type": "minecraft:noise",
+                    "noise": "penumbra_phantasm:depths_continents",
+                    "xz_scale": 1,
+                    "y_scale": 0
+                  },
+                  "points": [
+                    {
+                      "location": -1,
+                      "value": 0,
+                      "derivative": 0
+                    },
+                    {
+                      "location": -0.08,
+                      "value": 0,
+                      "derivative": 0
+                    },
+                    {
+                      "location": 0,
+                      "value": 1,
+                      "derivative": 0
+                    },
+                    {
+                      "location": 1,
+                      "value": 1,
+                      "derivative": 0
+                    }
+                  ]
+                }
+              }
+            }
+          }
         }
       }
     },
@@ -108,6 +335,18 @@
           "type": "minecraft:block",
           "result_state": {
             "Name": "penumbra_phantasm:unbreakable_darkness"
+          }
+        }
+      },
+      {
+        "type": "minecraft:condition",
+        "if_true": {
+          "type": "minecraft:steep"
+        },
+        "then_run": {
+          "type": "minecraft:block",
+          "result_state": {
+            "Name": "penumbra_phantasm:cobbled_tenebralith"
           }
         }
       },
