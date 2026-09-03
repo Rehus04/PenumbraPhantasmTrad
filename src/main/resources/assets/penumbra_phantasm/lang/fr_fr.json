@@ -324,6 +324,7 @@
   "block.penumbra_phantasm.yellow_check": "Jeton jaune",
 
   "block.penumbra_phantasm.hearth": "Foyer",
+  "block.penumbra_phantasm.scarlet_log_mysterious_door": "Porte Mystérieuse",
   "block.penumbra_phantasm.great_door_spawner": "Générateur de grande porte",
   "block.penumbra_phantasm.great_door_shape": "Grande porte",
   "block.penumbra_phantasm.cheshire_chest": "Coffre du chat",
@@ -368,8 +369,8 @@
   "block.penumbra_phantasm.ivory_brick_button": "Bouton en ivoire taillé",
   "block.penumbra_phantasm.ivory_brick_pressure_plate": "Plaque de pression en ivoire taillé",
 
-  "block.penumbra_phantasm.scarlet_log_mysterious_door": "Porte Mystérieuse",
   "block.penumbra_phantasm.unbreakable_darkness": "Ténèbres",
+  "block.penumbra_phantasm.titanstone": "Titan-mère",
 
   "liquid.penumbra_phantasm.pure_darkness": "Pure obscurité",
   "liquid.penumbra_phantasm.luminescent_water": "Eau luminescente",
@@ -456,10 +457,11 @@
   "tooltip.penumbra_phantasm.soul_hearth.determination": "DÉTERMINATION: ",
   "tooltip.penumbra_phantasm.soul_hearth.connection_level": "CONNEXION: ",
   "tooltip.penumbra_phantasm.soul_hearth.not_owner": "L'ÂME EN SON SEIN VOUS REJETTE.",
+  
   "tooltip.penumbra_phantasm.rosegold_lighter_fuel": "Combustible: ",
-
   "tooltip.penumbra_phantasm.saturation": "SATURATION",
   "tooltip.penumbra_phantasm.nutrition": "NUTRITION",
+  "tooltip.penumbra_phantasm.dark_wallet.total_money": "$",
 
   "flavor_text.penumbra_phantasm.dark_candy": "Une étoile rouge et noire au bon goût de guimauve.",
   "flavor_text.penumbra_phantasm.choco_diamond": "Un peu petit, mais certaines personnes l'ADORENT.",
