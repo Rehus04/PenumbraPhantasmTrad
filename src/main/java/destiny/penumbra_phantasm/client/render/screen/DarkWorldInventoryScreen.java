@@ -5,9 +5,11 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import destiny.penumbra_phantasm.PenumbraPhantasm;
 import destiny.penumbra_phantasm.client.render.RenderBlitUtil;
+import destiny.penumbra_phantasm.client.render.menu.DarkWorldInventoryMenu;
 import destiny.penumbra_phantasm.client.render.screen.component.DarkWorldRecipeBookComponent;
 import destiny.penumbra_phantasm.server.util.DarkWorldUtil;
 import net.minecraft.ChatFormatting;
+import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
@@ -17,10 +19,17 @@ import net.minecraft.client.gui.screens.recipebook.RecipeUpdateListener;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
+import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import net.minecraft.client.resources.MobEffectTextureManager;
+import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.util.Mth;
+import net.minecraft.world.effect.MobEffect;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.effect.MobEffectUtil;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
@@ -29,11 +38,20 @@ import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
+import net.minecraftforge.client.ForgeHooksClient;
+import net.minecraftforge.client.event.ContainerScreenEvent;
+import net.minecraftforge.client.event.ScreenEvent;
+import net.minecraftforge.client.extensions.common.IClientMobEffectExtensions;
+import net.minecraftforge.common.MinecraftForge;
 import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 
 import javax.annotation.Nullable;
+import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
 import java.util.Random;
+import java.util.stream.Collectors;
 
 @OnlyIn(Dist.CLIENT)
 public class DarkWorldInventoryScreen extends EffectRenderingInventoryScreen<DarkWorldInventoryMenu> implements RecipeUpdateListener {
@@ -128,7 +146,8 @@ public class DarkWorldInventoryScreen extends EffectRenderingInventoryScreen<Dar
             this.recipeBookComponent.render(pGuiGraphics, pMouseX, pMouseY, pPartialTick, 0);
         } else {
             this.recipeBookComponent.render(pGuiGraphics, pMouseX, pMouseY, pPartialTick, 0);
-            super.render(pGuiGraphics, pMouseX, pMouseY, pPartialTick);
+            renderVanilla(pGuiGraphics, pMouseX, pMouseY, pPartialTick);
+            this.renderEffects(pGuiGraphics, pMouseX, pMouseY);
             this.recipeBookComponent.renderGhostRecipe(pGuiGraphics, this.leftPos, this.topPos, true, pPartialTick);
         }
 
@@ -136,6 +155,180 @@ public class DarkWorldInventoryScreen extends EffectRenderingInventoryScreen<Dar
         this.recipeBookComponent.renderTooltip(pGuiGraphics, this.leftPos, this.topPos, pMouseX, pMouseY);
         this.xMouse = pMouseX;
         this.yMouse = pMouseY;
+    }
+
+    public void renderVanilla(GuiGraphics pGuiGraphics, int pMouseX, int pMouseY, float pPartialTick) {
+        int i = this.leftPos;
+        int j = this.topPos;
+        this.renderBg(pGuiGraphics, pPartialTick, pMouseX, pMouseY);
+        MinecraftForge.EVENT_BUS.post(new ContainerScreenEvent.Render.Background(this, pGuiGraphics, pMouseX, pMouseY));
+        RenderSystem.disableDepthTest();
+        super.render(pGuiGraphics, pMouseX, pMouseY, pPartialTick);
+        pGuiGraphics.pose().pushPose();
+        pGuiGraphics.pose().translate((float)i, (float)j, 0.0F);
+        this.hoveredSlot = null;
+
+        for(int k = 0; k < this.menu.slots.size(); ++k) {
+            if (k >= 5 && k < 9) {
+                continue;
+            }
+
+            Slot slot = this.menu.slots.get(k);
+            if (slot.isActive()) {
+                this.renderSlot(pGuiGraphics, slot);
+            }
+
+            if (this.isHovering(slot, pMouseX, pMouseY) && slot.isActive()) {
+                this.hoveredSlot = slot;
+                int l = slot.x;
+                int i1 = slot.y;
+                if (this.hoveredSlot.isHighlightable()) {
+                    renderSlotHighlight(pGuiGraphics, l, i1, 0, this.getSlotColor(k));
+                }
+            }
+        }
+
+        this.renderLabels(pGuiGraphics, pMouseX, pMouseY);
+        MinecraftForge.EVENT_BUS.post(new ContainerScreenEvent.Render.Foreground(this, pGuiGraphics, pMouseX, pMouseY));
+        ItemStack itemstack = this.draggingItem.isEmpty() ? this.menu.getCarried() : this.draggingItem;
+        if (!itemstack.isEmpty()) {
+            int l1 = 8;
+            int i2 = this.draggingItem.isEmpty() ? 8 : 16;
+            String s = null;
+            if (!this.draggingItem.isEmpty() && this.isSplittingStack) {
+                itemstack = itemstack.copyWithCount(Mth.ceil((float)itemstack.getCount() / 2.0F));
+            } else if (this.isQuickCrafting && this.quickCraftSlots.size() > 1) {
+                itemstack = itemstack.copyWithCount(this.quickCraftingRemainder);
+                if (itemstack.isEmpty()) {
+                    s = ChatFormatting.YELLOW + "0";
+                }
+            }
+
+            this.renderFloatingItem(pGuiGraphics, itemstack, pMouseX - i - 8, pMouseY - j - i2, s);
+        }
+
+        if (!this.snapbackItem.isEmpty()) {
+            float f = (float)(Util.getMillis() - this.snapbackTime) / 100.0F;
+            if (f >= 1.0F) {
+                f = 1.0F;
+                this.snapbackItem = ItemStack.EMPTY;
+            }
+
+            int j2 = this.snapbackEnd.x - this.snapbackStartX;
+            int k2 = this.snapbackEnd.y - this.snapbackStartY;
+            int j1 = this.snapbackStartX + (int)((float)j2 * f);
+            int k1 = this.snapbackStartY + (int)((float)k2 * f);
+            this.renderFloatingItem(pGuiGraphics, this.snapbackItem, j1, k1, null);
+        }
+
+        pGuiGraphics.pose().popPose();
+        RenderSystem.enableDepthTest();
+    }
+
+    private void renderEffects(GuiGraphics pGuiGraphics, int pMouseX, int pMouseY) {
+        int i = this.leftPos + this.imageWidth + 2;
+        int j = this.width - i;
+        Collection<MobEffectInstance> collection = this.minecraft.player.getActiveEffects();
+        if (!collection.isEmpty() && j >= 32) {
+            boolean flag = j >= 120;
+            ScreenEvent.RenderInventoryMobEffects event = ForgeHooksClient.onScreenPotionSize(this, j, !flag, i);
+            if (event.isCanceled()) {
+                return;
+            }
+
+            flag = !event.isCompact();
+            i = event.getHorizontalOffset();
+            int k = 33;
+            if (collection.size() > 5) {
+                k = 132 / (collection.size() - 1);
+            }
+
+            Iterable<MobEffectInstance> iterable = collection.stream().filter(ForgeHooksClient::shouldRenderEffect).sorted().collect(Collectors.toList());
+            this.renderBackgrounds(pGuiGraphics, i, k, iterable, flag);
+            this.renderIcons(pGuiGraphics, i, k, iterable, flag);
+            if (flag) {
+                this.renderLabels(pGuiGraphics, i, k, iterable);
+            } else if (pMouseX >= i && pMouseX <= i + 33) {
+                int l = this.topPos;
+                MobEffectInstance mobeffectinstance = null;
+
+                for(MobEffectInstance mobeffectinstance1 : iterable) {
+                    if (pMouseY >= l && pMouseY <= l + k) {
+                        mobeffectinstance = mobeffectinstance1;
+                    }
+
+                    l += k;
+                }
+
+                if (mobeffectinstance != null) {
+                    List<Component> list = List.of(this.getEffectName(mobeffectinstance), MobEffectUtil.formatDuration(mobeffectinstance, 1.0F));
+                    pGuiGraphics.renderTooltip(this.font, list, Optional.empty(), pMouseX, pMouseY);
+                }
+            }
+        }
+
+    }
+
+    private void renderBackgrounds(GuiGraphics pGuiGraphics, int pRenderX, int pYOffset, Iterable<MobEffectInstance> pEffects, boolean pIsSmall) {
+        int i = this.topPos;
+
+        for(MobEffectInstance mobeffectinstance : pEffects) {
+            if (pIsSmall) {
+                pGuiGraphics.blit(INVENTORY_LOCATION, pRenderX, i, 0, 166, 120, 32);
+            } else {
+                pGuiGraphics.blit(INVENTORY_LOCATION, pRenderX, i, 0, 198, 32, 32);
+            }
+
+            i += pYOffset;
+        }
+
+    }
+
+    private void renderIcons(GuiGraphics pGuiGraphics, int pRenderX, int pYOffset, Iterable<MobEffectInstance> pEffects, boolean pIsSmall) {
+        MobEffectTextureManager mobeffecttexturemanager = this.minecraft.getMobEffectTextures();
+        int i = this.topPos;
+
+        for(MobEffectInstance mobeffectinstance : pEffects) {
+            IClientMobEffectExtensions renderer = IClientMobEffectExtensions.of(mobeffectinstance);
+            if (renderer.renderInventoryIcon(mobeffectinstance, this, pGuiGraphics, pRenderX + (pIsSmall ? 6 : 7), i, 0)) {
+                i += pYOffset;
+            } else {
+                MobEffect mobeffect = mobeffectinstance.getEffect();
+                TextureAtlasSprite textureatlassprite = mobeffecttexturemanager.get(mobeffect);
+                pGuiGraphics.blit(pRenderX + (pIsSmall ? 6 : 7), i + 7, 0, 18, 18, textureatlassprite);
+                i += pYOffset;
+            }
+        }
+
+    }
+
+    private void renderLabels(GuiGraphics pGuiGraphics, int pRenderX, int pYOffset, Iterable<MobEffectInstance> pEffects) {
+        int i = this.topPos;
+
+        for(MobEffectInstance mobeffectinstance : pEffects) {
+            IClientMobEffectExtensions renderer = IClientMobEffectExtensions.of(mobeffectinstance);
+            if (renderer.renderInventoryText(mobeffectinstance, this, pGuiGraphics, pRenderX, i, 0)) {
+                i += pYOffset;
+            } else {
+                Component component = this.getEffectName(mobeffectinstance);
+                pGuiGraphics.drawString(this.font, component, pRenderX + 10 + 18, i + 6, 16777215);
+                Component component1 = MobEffectUtil.formatDuration(mobeffectinstance, 1.0F);
+                pGuiGraphics.drawString(this.font, component1, pRenderX + 10 + 18, i + 6 + 10, 8355711);
+                i += pYOffset;
+            }
+        }
+
+    }
+
+    private Component getEffectName(MobEffectInstance pEffect) {
+        MutableComponent mutablecomponent = pEffect.getEffect().getDisplayName().copy();
+        if (pEffect.getAmplifier() >= 1 && pEffect.getAmplifier() <= 9) {
+            MutableComponent var10000 = mutablecomponent.append(CommonComponents.SPACE);
+            int var10001 = pEffect.getAmplifier();
+            var10000.append(Component.translatable("enchantment.level." + (var10001 + 1)));
+        }
+
+        return mutablecomponent;
     }
 
     @Override
@@ -215,7 +408,7 @@ public class DarkWorldInventoryScreen extends EffectRenderingInventoryScreen<Dar
             this.setFocused(this.recipeBookComponent);
             return true;
         }
-        return this.widthTooNarrow && this.recipeBookComponent.isVisible() ? false : super.mouseClicked(pMouseX, pMouseY, pButton);
+        return (!this.widthTooNarrow || !this.recipeBookComponent.isVisible()) && super.mouseClicked(pMouseX, pMouseY, pButton);
     }
 
     @Override
@@ -274,6 +467,7 @@ public class DarkWorldInventoryScreen extends EffectRenderingInventoryScreen<Dar
         boolean flag1 = pSlot == this.clickedSlot && !this.draggingItem.isEmpty() && !this.isSplittingStack;
         ItemStack itemstack1 = this.menu.getCarried();
         String s = null;
+
         if (pSlot == this.clickedSlot && !this.draggingItem.isEmpty() && this.isSplittingStack && !itemstack.isEmpty()) {
             itemstack = itemstack.copyWithCount(itemstack.getCount() / 2);
         } else if (this.isQuickCrafting && this.quickCraftSlots.contains(pSlot) && !itemstack1.isEmpty()) {

@@ -2,27 +2,31 @@ package destiny.penumbra_phantasm.server.capability;
 
 import destiny.penumbra_phantasm.client.network.ClientBoundIntroPacket;
 import destiny.penumbra_phantasm.client.network.ClientBoundSoulSyncPacket;
+import destiny.penumbra_phantasm.server.fountain.DarkFountain;
 import destiny.penumbra_phantasm.server.item.SoulHearthItem;
-import destiny.penumbra_phantasm.server.registry.DamageTypeRegistry;
-import destiny.penumbra_phantasm.server.registry.FluidTypeRegistry;
-import destiny.penumbra_phantasm.server.registry.ItemRegistry;
-import destiny.penumbra_phantasm.server.registry.PacketHandlerRegistry;
+import destiny.penumbra_phantasm.server.registry.*;
 import destiny.penumbra_phantasm.server.util.DarkWorldUtil;
+import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Mth;
+import net.minecraft.world.effect.MobEffect;
+import net.minecraft.world.effect.MobEffectCategory;
+import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.material.FluidState;
+import net.minecraft.world.phys.Vec2;
 import net.minecraftforge.common.util.INBTSerializable;
+import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.fluids.FluidType;
 import net.minecraftforge.network.PacketDistributor;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.UUID;
+import java.util.*;
 
 //TODO:
 // - Transition soul hearth stuff to the capability
@@ -80,9 +84,11 @@ public class SoulCapability implements INBTSerializable<CompoundTag> {
         }
 
         if (isInNegativePhotons(level, player)) {
-            if (level.getGameTime() % 5 == 0) {
-                if (determination > 0) {
-                    determination = determination - 1;
+            if (!player.isCreative() && !player.isSpectator()) {
+                if (level.getGameTime() % 5 == 0) {
+                    if (determination > 0) {
+                        determination = determination - 1;
+                    }
                 }
             }
         } else if (!DarkWorldUtil.isDepths(level)) {
@@ -95,12 +101,45 @@ public class SoulCapability implements INBTSerializable<CompoundTag> {
             }
         } else {
             if (determination > 0) {
-                if (!player.isCreative() && !player.isSpectator()) {
-                    if (level.getGameTime() % (5 * 20) == 0) {
-                        determination = determination - 1;
+                DarkFountainCapability fountainCapability = null;
+                LazyOptional<DarkFountainCapability> lazyFountainCapability = level.getCapability(CapabilityRegistry.DARK_FOUNTAIN);
+                if (lazyFountainCapability.isPresent() && lazyFountainCapability.resolve().isPresent()) {
+                    fountainCapability = lazyFountainCapability.resolve().get();
+                }
+
+                if (fountainCapability != null) {
+                    BlockPos playerPos = player.blockPosition();
+
+                    for (Map.Entry<BlockPos, DarkFountain> entry : fountainCapability.darkFountains.entrySet()) {
+                        BlockPos fountainPos = entry.getKey();
+
+                        if (playerPos.distSqr(fountainPos) > Mth.square(96)) {
+                            if (!player.isCreative() && !player.isSpectator()) {
+                                if (level.getGameTime() % (5 * 20) == 0) {
+                                    determination = determination - 1;
+                                }
+                            }
+                            break;
+                        }
                     }
                 }
             } else {
+                //Remove all potentially beneficial effects so players suffer
+                List<MobEffect> effectsToRemove = new ArrayList<>();
+                for (MobEffectInstance effect : player.getActiveEffects()) {
+                    MobEffectCategory category = effect.getEffect().getCategory();
+
+                    if (category == MobEffectCategory.BENEFICIAL || category == MobEffectCategory.NEUTRAL) {
+                        effectsToRemove.add(effect.getEffect());
+                    }
+                }
+                for (MobEffect mobEffect : effectsToRemove) {
+                    player.removeEffect(mobEffect);
+                }
+
+                //Remove saturation so players suffer even more
+                player.getFoodData().setSaturation(0f);
+
                 if (level.getGameTime() % 60 == 0) {
                     player.hurt(DamageTypeRegistry.getSimpleDamageSource(level, DamageTypeRegistry.EROSION), 6);
                 }

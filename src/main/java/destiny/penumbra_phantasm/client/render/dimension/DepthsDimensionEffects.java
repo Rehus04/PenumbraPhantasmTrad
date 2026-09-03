@@ -86,9 +86,6 @@ public class DepthsDimensionEffects extends DimensionSpecialEffects {
 
         this.skyBuffer.bind();
         this.skyBuffer.drawWithShader(poseStack.last().pose(), projectionMatrix, RenderSystem.getShader());
-        this.lowerSkyBuffer.bind();
-        this.lowerSkyBuffer.drawWithShader(poseStack.last().pose(), projectionMatrix, RenderSystem.getShader());
-        VertexBuffer.unbind();
 
         RenderSystem.setShaderColor(1F, 1F, 1F, 1F);
         RenderSystem.enableBlend();
@@ -103,6 +100,10 @@ public class DepthsDimensionEffects extends DimensionSpecialEffects {
         this.createSprites(level);
 
         this.renderSpriteQuads(poseStack, projectionMatrix);
+
+        this.lowerSkyBuffer.bind();
+        this.lowerSkyBuffer.drawWithShader(poseStack.last().pose(), projectionMatrix, RenderSystem.getShader());
+        VertexBuffer.unbind();
 
         RenderSystem.disableBlend();
         RenderSystem.enableCull();
@@ -233,7 +234,7 @@ public class DepthsDimensionEffects extends DimensionSpecialEffects {
         this.flashesBackgroundBuffer.bind();
         this.flashesBackgroundBuffer.upload(renderedBuffer);
 
-        Color middleColor = Color.getHSBColor(0f, 0f, 0.02f);
+        Color middleColor = Color.getHSBColor(0f, 0f, 0.1f);
         ShaderInstance shaderInstance = ModShaders.FOUNTAIN_MASKED;
 
         if (shaderInstance != null) {

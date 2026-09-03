@@ -1,9 +1,8 @@
-package destiny.penumbra_phantasm.client.render.screen;
+package destiny.penumbra_phantasm.client.render.menu;
 
 import com.mojang.datafixers.util.Pair;
 
 import java.util.List;
-import java.util.Optional;
 
 import destiny.penumbra_phantasm.server.util.DarkWorldUtil;
 import net.minecraft.network.protocol.game.ClientboundContainerSetSlotPacket;
@@ -65,9 +64,9 @@ public class DarkWorldInventoryMenu extends RecipeBookMenu<CraftingContainer> {
             }
         }
 
-/*        for (int k = 0; k < 4; ++k) {
+        for (int k = 0; k < 4; ++k) {
             final EquipmentSlot equipmentslot = SLOT_IDS[k];
-            this.addSlot(new Slot(pPlayerInventory, 39 - k, ARMOR_SLOTS_X, ARMOR_SLOTS_Y + k * 18) {
+            this.addSlot(new Slot(pPlayerInventory, 39 - k, -2000, -2000) {
                 public void setByPlayer(ItemStack pStack) {
                     DarkWorldInventoryMenu.onEquipItem(pOwner, equipmentslot, pStack, this.getItem());
                     super.setByPlayer(pStack);
@@ -77,8 +76,13 @@ public class DarkWorldInventoryMenu extends RecipeBookMenu<CraftingContainer> {
                     return 1;
                 }
 
+                @Override
+                public boolean isActive() {
+                    return false;
+                }
+
                 public boolean mayPlace(ItemStack pStack) {
-                    return pStack.canEquip(equipmentslot, owner);
+                    return false;
                 }
 
                 public boolean mayPickup(Player pPlayer) {
@@ -90,7 +94,7 @@ public class DarkWorldInventoryMenu extends RecipeBookMenu<CraftingContainer> {
                     return Pair.of(InventoryMenu.BLOCK_ATLAS, TEXTURE_EMPTY_SLOTS[equipmentslot.getIndex()]);
                 }
             });
-        }*/
+        }
 
         for (int l = 0; l < 3; ++l) {
             for (int j1 = 0; j1 < 9; ++j1) {
@@ -112,6 +116,11 @@ public class DarkWorldInventoryMenu extends RecipeBookMenu<CraftingContainer> {
                 return Pair.of(InventoryMenu.BLOCK_ATLAS, InventoryMenu.EMPTY_ARMOR_SLOT_SHIELD);
             }
         });
+    }
+
+    @Override
+    public boolean canDragTo(Slot slot) {
+        return !isHiddenArmorSlot(slot.index);
     }
 
     static void onEquipItem(Player pPlayer, EquipmentSlot pSlot, ItemStack pNewItem, ItemStack pOldItem) {
@@ -142,6 +151,13 @@ public class DarkWorldInventoryMenu extends RecipeBookMenu<CraftingContainer> {
 
     public void slotsChanged(Container pInventory) {
         slotChangedCraftingGrid(this, this.owner.level(), this.owner, this.craftSlots, this.resultSlots);
+    }
+
+    @Override
+    public void clicked(int pSlotId, int pButton, ClickType pClickType, Player pPlayer) {
+        if (isHiddenArmorSlot(pSlotId)) return;
+
+        super.clicked(pSlotId, pButton, pClickType, pPlayer);
     }
 
     public void removed(Player pPlayer) {
@@ -175,11 +191,6 @@ public class DarkWorldInventoryMenu extends RecipeBookMenu<CraftingContainer> {
                 }
             } else if (pIndex >= 5 && pIndex < 9) {
                 if (!this.moveItemStackTo(itemstack1, 9, 45, false)) {
-                    return ItemStack.EMPTY;
-                }
-            } else if (equipmentslot.getType() == EquipmentSlot.Type.ARMOR && !this.slots.get(8 - equipmentslot.getIndex()).hasItem()) {
-                int i = 8 - equipmentslot.getIndex();
-                if (!this.moveItemStackTo(itemstack1, i, i + 1, false)) {
                     return ItemStack.EMPTY;
                 }
             } else if (equipmentslot == EquipmentSlot.OFFHAND && !this.slots.get(45).hasItem()) {
@@ -219,6 +230,10 @@ public class DarkWorldInventoryMenu extends RecipeBookMenu<CraftingContainer> {
 
     public boolean canTakeItemForPickAll(ItemStack pStack, Slot pSlot) {
         return pSlot.container != this.resultSlots && super.canTakeItemForPickAll(pStack, pSlot);
+    }
+
+    public static boolean isHiddenArmorSlot(int menuSlotIndex) {
+        return menuSlotIndex >= 5 && menuSlotIndex < 9;
     }
 
     public int getResultSlotIndex() {

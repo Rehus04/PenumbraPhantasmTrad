@@ -7,6 +7,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import destiny.penumbra_phantasm.PenumbraPhantasm;
 import destiny.penumbra_phantasm.server.registry.BlockRegistry;
+import destiny.penumbra_phantasm.server.registry.BlocksetRegistry;
 import net.minecraft.SharedConstants;
 import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
@@ -460,12 +461,12 @@ public class SeededNoiseBasedChunkGenerator extends NoiseBasedChunkGenerator {
       Random random = new Random();
 
       if (y == getMinY()) {
-         return Blocks.BEDROCK.defaultBlockState();
+         return BlockRegistry.TITANSTONE.get().defaultBlockState();
       }
 
       if (y <= getMinY() + 4) {
          if (random.nextBoolean()) {
-            return Blocks.BEDROCK.defaultBlockState();
+            return BlockRegistry.TITANSTONE.get().defaultBlockState();
          }
       }
 
@@ -591,12 +592,12 @@ public class SeededNoiseBasedChunkGenerator extends NoiseBasedChunkGenerator {
       Random random = new Random();
 
       if (y == getMinY()) {
-         return Blocks.BEDROCK.defaultBlockState();
+         return BlockRegistry.TITANSTONE.get().defaultBlockState();
       }
 
       if (y <= getMinY() + 4) {
          if (random.nextBoolean()) {
-            return Blocks.BEDROCK.defaultBlockState();
+            return BlockRegistry.TITANSTONE.get().defaultBlockState();
          }
       }
 
@@ -616,12 +617,12 @@ public class SeededNoiseBasedChunkGenerator extends NoiseBasedChunkGenerator {
       Random random = new Random();
 
       if (y == getMinY()) {
-         return Blocks.BEDROCK.defaultBlockState();
+         return BlockRegistry.TITANSTONE.get().defaultBlockState();
       }
 
       if (y <= getMinY() + 4) {
          if (random.nextBoolean()) {
-            return Blocks.BEDROCK.defaultBlockState();
+            return BlockRegistry.TITANSTONE.get().defaultBlockState();
          }
       }
 

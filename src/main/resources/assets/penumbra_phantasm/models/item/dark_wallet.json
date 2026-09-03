@@ -1,6 +1,11 @@
 {
-  "parent": "minecraft:item/generated",
-  "textures": {
-    "layer0": "penumbra_phantasm:item/dark_wallet_empty"
-  }
+  "base":
+  {
+    "parent": "penumbra_phantasm:item/dark_wallet_empty"
+  },
+  "overrides":
+  [
+    { "predicate": { "penumbra_phantasm:money": 0.0 }, "model": "penumbra_phantasm:item/dark_wallet_empty"},
+    { "predicate": { "penumbra_phantasm:money": 1.0 }, "model": "penumbra_phantasm:item/dark_wallet_full"}
+  ]
 }

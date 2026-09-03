@@ -326,7 +326,6 @@
 
   "block.penumbra_phantasm.hearth": "Hearth",
   "block.penumbra_phantasm.great_door_spawner": "Great Door Spawner",
-  "block.penumbra_phantasm.great_door_shape": "Great Door",
   "block.penumbra_phantasm.fire_door": "Fire Door",
   "block.penumbra_phantasm.cheshire_chest": "Cheshire Chest",
 
@@ -371,8 +370,11 @@
   "block.penumbra_phantasm.ivory_brick_button": "Ivory Brick Button",
   "block.penumbra_phantasm.ivory_brick_pressure_plate": "Ivory Brick Pressure Plate",
 
+  "block.penumbra_phantasm.great_door_shape": "Great Door",
   "block.penumbra_phantasm.scarlet_log_mysterious_door": "Mysterious Door",
   "block.penumbra_phantasm.unbreakable_darkness": "Darkness",
+
+  "block.penumbra_phantasm.titanstone": "Titanstone",
 
   "liquid.penumbra_phantasm.pure_darkness": "Pure Darkness",
   "liquid.penumbra_phantasm.luminescent_water": "Luminescent Water",
@@ -462,6 +464,7 @@
   "tooltip.penumbra_phantasm.rosegold_lighter_fuel": "Fuel: ",
   "tooltip.penumbra_phantasm.saturation": "SATURATION",
   "tooltip.penumbra_phantasm.nutrition": "NUTRITION",
+  "tooltip.penumbra_phantasm.dark_wallet.total_money": "D$",
 
   "flavor_text.penumbra_phantasm.dark_candy": "A red-and-black star that tastes like marshmallows.",
   "flavor_text.penumbra_phantasm.choco_diamond": "It's quite small, but some people REALLY like it.",

@@ -58,11 +58,11 @@ public class VanillaInventoryHandler implements IStorageHandler
 			if(player.getItemInHand(InteractionHand.OFF_HAND).isEmpty())
 				player.setItemInHand(InteractionHand.OFF_HAND, stack);
 			else if(!player.addItem(stack))
-				player.drop(stack, true, false);
+				player.drop(stack, false, false);
 		}
 		else if(player.getInventory().getItem(slot).isEmpty())
 			player.getInventory().setItem(slot, stack);
 		else if(!player.addItem(stack))
-			player.drop(stack, true, false);
+			player.drop(stack, false, false);
 	}
 }

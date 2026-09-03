@@ -51,6 +51,8 @@ public class CreativeTabRegistry {
                 output.accept(BlockRegistry.FIRE_DOOR.get());
                 output.accept(ItemRegistry.CHESHIRE_CHEST.get());
                 output.accept(BlockRegistry.GREAT_DOOR_SPAWNER.get());
+
+                output.accept(BlockRegistry.TITANSTONE.get());
             })
             .build()
     );
